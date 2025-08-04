@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		<title>cannan.dev</title>
+		<link rel="icon" type="image/png" href="static/favicon.png">
+		<link rel="stylesheet" href="static/main.css">
+		<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" integrity="sha384-Akqfrbj/HpNVo8k11SXBb6TlBWmXXlYQrCSqEWmyKJe+hDm3Z/B2WVG4smwBkRVm" crossorigin="anonymous"></script>
+	</head>
+	<body>
+		<h2>cannan.dev</h2>
+		<form hx-post="'/login">
+		<p><input type="text" placeholder="Email" name="Email" required></p>
+		<p><input type="text" placeholder="Password" name="password" required></p>
+		<p><input type="checkbox" checked="checked" name="remember"> Remember me</p>
+		<p><button type="submit">Login</button></p>
+		<p><button hx-get="/brutalpost" hx-swap="outerHTML">Test HTMX</button></p>
+	</body>
+</html>
