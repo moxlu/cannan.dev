@@ -1,2 +1,2 @@
 # cannan
-A meet and learn platform for CTF teams
+A meet and learn platform for CTF teams.
