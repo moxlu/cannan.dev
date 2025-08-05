@@ -1,10 +1,16 @@
 package main
 
 import (
+	"database/sql"
 	"html/template"
 	"log"
 	"net/http"
+
+	_ "github.com/mattn/go-sqlite3"
 )
+
+// Global variables
+var db *sql.DB
 
 func HandleIndex(w http.ResponseWriter, r *http.Request) {
 	log.Print(r.RemoteAddr + " " + r.Method + " " + r.URL.String())
@@ -24,12 +30,27 @@ func HandleIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	// Start Database
+	var err error
+	db, err = sql.Open("sqlite3", "../run/cannan.db")
+	if err != nil {
+		log.Print(err.Error())
+		return
+	}
+	defer db.Close()
+
+	_, err = db.Exec("PRAGMA foreign_keys = ON;")
+	if err != nil {
+		log.Print(err.Error())
+		return
+	} else {
+		log.Print("Database loaded OK")
+	}
+
+	// Start mux and handlers
 	MuxPrimary := http.NewServeMux()
-
-	// Main Handlers
 	MuxPrimary.HandleFunc("/", HandleIndex)
-
-	// Challenge Specific Handlers
+	MuxPrimary.HandleFunc("POST /login", HandleLogin)
 	MuxPrimary.HandleFunc("/brutalpost", HandleBrutalpost)
 	MuxPrimary.HandleFunc("/lasersharks", HandleLasersharks)
 
@@ -38,7 +59,7 @@ func main() {
 	MuxPrimary.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 	MuxPrimary.Handle("GET /robots.txt", fileServer)
 
-	log.Print("Starting server on :8080")
-	err := http.ListenAndServe(":8080", MuxPrimary)
-	log.Fatal(err)
+	log.Print("Starting server on :4000")
+	err = http.ListenAndServe(":4000", MuxPrimary)
+	log.Print(err.Error())
 }
