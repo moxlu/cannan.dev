@@ -41,7 +41,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	err = db.QueryRow("SELECT user_hash FROM USERS WHERE user_email = ?", email).Scan(&storedHash)
 	if err != nil {
-		log.Print("Error HandleLogin() 200 - Failed SQL query to find or get user hash based on provided email")
+		log.Print("Error HandleLogin() 200 - Wrong email or failed SQL query to find or get user hash based on provided email")
 		SendLoginFail(w, IP, email)
 		return
 	}

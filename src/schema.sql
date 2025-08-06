@@ -59,7 +59,8 @@ CREATE TABLE NOTICES (
 	user_id INTEGER NOT NULL,
 	notice_title TEXT NOT NULL,
 	notice_content TEXT NOT NULL,
-	notice_datetime DATETIME DEFAULT CURRENT_TIMESTAMP,
+	notice_posted DATETIME DEFAULT CURRENT_TIMESTAMP,
+	notice_expiry DATETIME,
 	FOREIGN KEY (user_id) REFERENCES USERS(user_id)
 );
 
@@ -68,7 +69,8 @@ CREATE TABLE NOTICES_QUEUE (
 	user_id INTEGER NOT NULL,
 	notice_queue_title TEXT NOT NULL,
 	notice_queue_content TEXT NOT NULL,
-	notice_queue_scheduled_datetime DATETIME,
+	notice_queue_scheduled DATETIME,
+	notice_queue_expiry DATETIME,
 	notice_queue_crosspost_to_discord BOOLEAN DEFAULT 0,
 	FOREIGN KEY (user_id) REFERENCES USERS(user_id)
 );
