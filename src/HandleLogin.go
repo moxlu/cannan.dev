@@ -9,48 +9,67 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func hashPassword(plainPwd string) (string, error) {
-	params := &argon2id.Params{
-		Memory:      32 * 1024, // 32 MB
-		Iterations:  2,
-		Parallelism: 1,
-		SaltLength:  16,
-		KeyLength:   32,
+func SendLoginFail(w http.ResponseWriter, IP string, email string) {
+	log.Print("Failed login: ", IP, " ", email)
+	response, err := template.ParseFiles("../dynamic/login_fail.html")
+	if err != nil {
+		log.Print("Error SendLoginFail() 100 - Failed parsing login_fail.html")
+		return
 	}
-
-	hashedPwd, err := argon2id.CreateHash(plainPwd, params)
-	return hashedPwd, err
+	err = response.Execute(w, nil)
+	if err != nil {
+		log.Print("Error SendLoginFail() 200 - Failed serving login_fail.html")
+		return
+	}
 }
 
 func HandleLogin(w http.ResponseWriter, r *http.Request) {
-	var match bool
-	var response *template.Template
-	var err error
 	var storedHash string
+	var PasswordIsCorrect bool
+	var response *template.Template
 
-	log.Print(r.RemoteAddr + " " + r.Method + " " + r.URL.String())
-
-	r.ParseForm()
+	IP := r.RemoteAddr
+	err := r.ParseForm()
 	email := r.FormValue("email")
 	password := r.FormValue("password")
-	db.QueryRow("SELECT user_hash FROM USERS WHERE user_email = ?", email).Scan(&storedHash)
-	match, err = argon2id.ComparePasswordAndHash(password, storedHash)
+
 	if err != nil {
-		log.Print(err.Error())
-		response, err = template.ParseFiles("../dynamic/login fail.html")
-		if err != nil {
-			log.Print(err.Error())
-		}
-
+		log.Print("Error HandleLogin() 100 - Failed parsing /login form")
+		SendLoginFail(w, IP, email)
+		return
 	}
 
-	if match {
-		log.Print("Successful login: ", email)
-		response, err = template.ParseFiles("../dynamic/login success.html")
-		if err != nil {
-			log.Print(err.Error())
-		}
+	err = db.QueryRow("SELECT user_hash FROM USERS WHERE user_email = ?", email).Scan(&storedHash)
+	if err != nil {
+		log.Print("Error HandleLogin() 200 - Failed SQL query to find or get user hash based on provided email")
+		SendLoginFail(w, IP, email)
+		return
 	}
 
-	response.Execute(w, nil)
+	PasswordIsCorrect, err = argon2id.ComparePasswordAndHash(password, storedHash)
+	if err != nil {
+		log.Print("Error HandleLogin() 300 - Failed Argon2id comparing password and hash")
+		SendLoginFail(w, IP, email)
+		return
+	}
+
+	if PasswordIsCorrect {
+		log.Print("Successful login: ", IP, " ", email)
+		response, err = template.ParseFiles("../dynamic/login_success.html")
+		if err != nil {
+			log.Print("Error HandleLogin() 400 - Failed parsing login_success.html")
+			SendLoginFail(w, IP, email)
+			return
+		}
+		err = response.Execute(w, nil)
+		if err != nil {
+			log.Print("Error HandleLogin() 500 - Failed serving login_success.html")
+			SendLoginFail(w, IP, email)
+			return
+		}
+	} else {
+		log.Print("Alert HandleLogin() 600 - Wrong password")
+		SendLoginFail(w, IP, email)
+		return
+	}
 }
