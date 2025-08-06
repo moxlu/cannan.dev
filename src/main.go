@@ -17,16 +17,21 @@ func HandleIndex(w http.ResponseWriter, r *http.Request) {
 
 	response, err := template.ParseFiles("../dynamic/index.html")
 	if err != nil {
-		log.Print(err.Error())
+		log.Print("Error HandleIndex() 100 - Failed parsing index.html")
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	err = response.Execute(w, nil)
 	if err != nil {
-		log.Print(err.Error())
+		log.Print("Error HandleIndex() 200 - Failed serving index.html")
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
+}
+
+func Handle404(w http.ResponseWriter, r *http.Request) {
+	log.Print("Alert 404 - " + r.RemoteAddr + " " + r.Method + " " + r.URL.String())
+	http.Error(w, "Page not found", http.StatusNotFound)
 }
 
 func main() {
@@ -49,15 +54,21 @@ func main() {
 
 	// Start mux and handlers
 	MuxPrimary := http.NewServeMux()
-	MuxPrimary.HandleFunc("/", HandleIndex)
+	MuxPrimary.HandleFunc("GET /{$}", HandleIndex)
 	MuxPrimary.HandleFunc("POST /login", HandleLogin)
-	MuxPrimary.HandleFunc("/brutalpost", HandleBrutalpost)
-	MuxPrimary.HandleFunc("/lasersharks", HandleLasersharks)
+	MuxPrimary.HandleFunc("GET /invite/{token}", HandleGetInvite)
+	MuxPrimary.HandleFunc("POST /invite", HandlePostInvite)
+	MuxPrimary.HandleFunc("GET POST /brutalpost", HandleBrutalpost)
+	MuxPrimary.HandleFunc("GET /lasersharks", HandleLasersharks)
 
-	// Fileserver for static files only
+	// Fileserver for specified static files only
 	fileServer := http.FileServer(http.Dir("../static/"))
-	MuxPrimary.Handle("GET /static/", http.StripPrefix("/static", fileServer))
+	MuxPrimary.Handle("GET /favicon.ico", fileServer)
+	MuxPrimary.Handle("GET /main.css", fileServer)
 	MuxPrimary.Handle("GET /robots.txt", fileServer)
+
+	// Everything else should go to 404
+	MuxPrimary.HandleFunc("/", Handle404)
 
 	log.Print("Starting server on :4000")
 	err = http.ListenAndServe(":4000", MuxPrimary)
