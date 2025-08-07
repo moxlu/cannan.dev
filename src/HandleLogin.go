@@ -9,7 +9,91 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func SendLoginFail(w http.ResponseWriter, IP string, email string) {
+type Notice struct {
+	Notice_title   template.HTML
+	Notice_content template.HTML
+}
+
+type Challenge struct {
+	Challenge_id     string
+	Challenge_title  string
+	Challenge_points string
+}
+
+type PageData struct {
+	Notices    []Notice
+	Challenges []Challenge
+}
+
+func (app *application) SendLoginSuccess(w http.ResponseWriter, r *http.Request, email string) {
+	var notices []Notice
+	var challenges []Challenge
+
+	session, _ := app.store.Get(r, "session-name")
+	session.Values["authenticated"] = true
+	session.Values["email"] = email
+	session.Save(r, w)
+
+	log.Print("Successful login: ", email)
+
+	statement := "SELECT notice_title, notice_content FROM NOTICES;"
+	rows, err := app.db.Query(statement)
+	if err != nil {
+		log.Print("Error SendLoginSuccess() 100 - Failed fetching notices")
+		http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
+		return
+	}
+
+	for rows.Next() {
+		var n Notice
+		err = rows.Scan(&n.Notice_title, &n.Notice_content)
+		if err != nil {
+			log.Print("Error SendLoginSuccess() 200 - Failed processing notices")
+			http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
+			return
+		}
+		notices = append(notices, n)
+	}
+
+	statement = "SELECT challenge_id, challenge_title, challenge_points FROM CHALLENGES;"
+	rows, err = app.db.Query(statement)
+	if err != nil {
+		log.Print("Error SendLoginSuccess() 300 - Failed fetching challenges")
+		http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
+		return
+	}
+
+	for rows.Next() {
+		var c Challenge
+		err = rows.Scan(&c.Challenge_id, &c.Challenge_title, &c.Challenge_points)
+		if err != nil {
+			log.Print("Error SendLoginSuccess() 400 - Failed processing challenges")
+			http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
+			return
+		}
+		challenges = append(challenges, c)
+	}
+
+	data := PageData{
+		Notices:    notices,
+		Challenges: challenges,
+	}
+
+	tmpl, err := template.ParseFiles("../dynamic/login_success.html")
+	if err != nil {
+		log.Print("Error SendLoginSuccess() 500 - Failed parsing template")
+		http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
+		return
+	}
+
+	if err := tmpl.Execute(w, data); err != nil {
+		log.Print("Error SendLoginSuccess() 600 - Failed merging and serving template")
+		log.Print(err.Error())
+		http.Error(w, "Execution error", http.StatusInternalServerError)
+	}
+}
+
+func (app *application) SendLoginFail(w http.ResponseWriter, IP string, email string) {
 	log.Print("Failed login: ", IP, " ", email)
 	response, err := template.ParseFiles("../dynamic/login_fail.html")
 	if err != nil {
@@ -23,10 +107,9 @@ func SendLoginFail(w http.ResponseWriter, IP string, email string) {
 	}
 }
 
-func HandleLogin(w http.ResponseWriter, r *http.Request) {
+func (app *application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	var storedHash string
 	var PasswordIsCorrect bool
-	var response *template.Template
 
 	IP := r.RemoteAddr
 	err := r.ParseForm()
@@ -35,41 +118,29 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Print("Error HandleLogin() 100 - Failed parsing /login form")
-		SendLoginFail(w, IP, email)
+		app.SendLoginFail(w, IP, email)
 		return
 	}
 
-	err = db.QueryRow("SELECT user_hash FROM USERS WHERE user_email = ?", email).Scan(&storedHash)
+	err = app.db.QueryRow("SELECT user_hash FROM USERS WHERE user_email = ?", email).Scan(&storedHash)
 	if err != nil {
 		log.Print("Error HandleLogin() 200 - Wrong email or failed SQL query to find or get user hash based on provided email")
-		SendLoginFail(w, IP, email)
+		app.SendLoginFail(w, IP, email)
 		return
 	}
 
 	PasswordIsCorrect, err = argon2id.ComparePasswordAndHash(password, storedHash)
 	if err != nil {
 		log.Print("Error HandleLogin() 300 - Failed Argon2id comparing password and hash")
-		SendLoginFail(w, IP, email)
+		app.SendLoginFail(w, IP, email)
 		return
 	}
 
 	if PasswordIsCorrect {
-		log.Print("Successful login: ", IP, " ", email)
-		response, err = template.ParseFiles("../dynamic/login_success.html")
-		if err != nil {
-			log.Print("Error HandleLogin() 400 - Failed parsing login_success.html")
-			SendLoginFail(w, IP, email)
-			return
-		}
-		err = response.Execute(w, nil)
-		if err != nil {
-			log.Print("Error HandleLogin() 500 - Failed serving login_success.html")
-			SendLoginFail(w, IP, email)
-			return
-		}
+		app.SendLoginSuccess(w, r, email)
 	} else {
-		log.Print("Alert HandleLogin() 600 - Wrong password")
-		SendLoginFail(w, IP, email)
+		log.Print("Alert HandleLogin() 400 - Wrong password")
+		app.SendLoginFail(w, IP, email)
 		return
 	}
 }

@@ -5,14 +5,18 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/gorilla/sessions"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// Global variables
-var db *sql.DB
+type application struct {
+	db    *sql.DB
+	store *sessions.CookieStore
+}
 
-func HandleIndex(w http.ResponseWriter, r *http.Request) {
+func (app *application) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	log.Print(r.RemoteAddr + " " + r.Method + " " + r.URL.String())
 
 	response, err := template.ParseFiles("../dynamic/index.html")
@@ -36,13 +40,11 @@ func Handle404(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	// Start Database
-	var err error
-	db, err = sql.Open("sqlite3", "../run/cannan.db")
+	db, err := sql.Open("sqlite3", "../run/cannan.db")
 	if err != nil {
 		log.Print(err.Error())
 		return
 	}
-	defer db.Close()
 
 	_, err = db.Exec("PRAGMA foreign_keys = ON;")
 	if err != nil {
@@ -51,14 +53,29 @@ func main() {
 	} else {
 		log.Print("Database loaded OK")
 	}
+	defer db.Close()
+
+	// Prepare session data
+	key1, err := os.ReadFile("../run/keys.txt")
+	if err != nil {
+		log.Print(err.Error())
+		return
+	}
+
+	app := &application{
+		db:    db,
+		store: sessions.NewCookieStore(key1),
+	}
 
 	// Start mux and handlers
 	MuxPrimary := http.NewServeMux()
-	MuxPrimary.HandleFunc("GET /{$}", HandleIndex)
-	MuxPrimary.HandleFunc("POST /login", HandleLogin)
-	MuxPrimary.HandleFunc("GET /invite/{token}", HandleGetInvite)
-	MuxPrimary.HandleFunc("POST /invite", HandlePostInvite)
-	MuxPrimary.HandleFunc("GET POST /brutalpost", HandleBrutalpost)
+	MuxPrimary.HandleFunc("GET /{$}", app.HandleIndex)
+	MuxPrimary.HandleFunc("POST /login", app.HandleLogin)
+	MuxPrimary.HandleFunc("GET /challenge/{id}", app.HandleChallengeGet)
+	MuxPrimary.HandleFunc("POST /challenge/{id}", app.HandleChallengePost)
+	MuxPrimary.HandleFunc("GET /invite/{token}", app.HandleInviteGet)
+	MuxPrimary.HandleFunc("POST /invite/{token}", app.HandleInvitePost)
+	MuxPrimary.HandleFunc("GET /brutalpost", HandleBrutalpost)
 	MuxPrimary.HandleFunc("GET /lasersharks", HandleLasersharks)
 
 	// Fileserver for specified static files only

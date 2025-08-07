@@ -1,0 +1,8 @@
+<h2>{{.Challenge_title}}</h2>
+<h3>{{.Challenge_points}} points</h3><br>
+{{.Challenge_description}}
+<form hx-post="/challenge/{{.Challenge_id}}" hx-target="#result">
+<p><input type="text" placeholder="flag{this_is_an_example}" name="flag" required>
+<button type="submit" class="flag-button">Submit</button></p>
+<div id="result"></div>
+</form>

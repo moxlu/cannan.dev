@@ -5,74 +5,33 @@
 </div>
 <!------------------------------------------------->
 <div id="noticeboard" class="section">
-	<div class="notice">
-		<h2>🎉 Welcome to cannan.dev!</h2>
-		<p>We meet on the ADFCSA Discord at 1900 h (AEST) on Thursdays.</p>
-		<br>
-		<table class="schedule">
-		<thead>
-		<tr>
-		<th>Week</th>
-		<th>Date</th>
-		<th>Focus</th>
-		</tr>
-		</thead>
-		<tbody>
-		<tr><td>1</td><td>07 Aug 25</td><td>Cryptography: Classic ciphers</td></tr>
-		<tr><td>2</td><td>14 Aug 25</td><td>Forensics: File analysis and metadata</td></tr>
-		<tr><td>3</td><td>21 Aug 25</td><td>Forensics: Network traffic and packet captures</td></tr>
-		<tr><td>4</td><td>28 Aug 25</td><td>Open Source Intelligence (OSINT)</td></tr>
-		<tr><td>5</td><td>04 Sep 25</td><td>Linux command line</td></tr>
-		<tr><td>6</td><td>11 Sep 25</td><td>Scripting: Loops and filters</td></tr>
-		<tr><td>7</td><td>18 Sep 25</td><td>Scripting: Sockets and APIs</td></tr>
-		<tr><td>8</td><td>25 Sep 25</td><td>Cryptography: Hashes</td></tr>
-		<tr><td>9</td><td>02 Oct 25</td><td>Web vulnerabilities: URLs and cookies</td></tr>
-		<tr><td>10</td><td>09 Oct 25</td><td>Web vulnerabilities: Injection</td></tr>
-		<tr><td>11</td><td>16 Oct 25</td><td>Cryptography: AES</td></tr>
-		<tr><td>12</td><td>23 Oct 25</td><td>Forensics: Detection</td></tr>
-		<tr><td>13</td><td>30 Oct 25</td><td>Forensics: Investigation</td></tr>
-		<tr><td>14</td><td>06 Nov 25</td><td>Reverse Engineering</td></tr>
-		<tr><td>15</td><td>13 Nov 25</td><td><em>TBC pending plans for RA Sigs Corps Week</em></td></tr>
-		<tr><td>16</td><td>20 Nov 25</td><td>Revision / Requests</td></tr>
-		<tr><td>17</td><td>27 Nov 25</td><td>CTF teams and game plans</td></tr>
-		</tbody>
-		</table>
-	</div>
-
-	<div class="notice">
-		<h2>📢 ADF Cyber Skills Challenge Dates Announced</h2>
-		<p>01-05 Dec 25, Canberra or remote (Further details TBA)</p>
-	</div>
+	{{range .Notices}}
+        <div class="notice">{{.Notice_title}}{{.Notice_content}}</div>
+        {{else}}
+        <h2>No notices found.</h2>
+    {{end}}
 </div>
 <!------------------------------------------------->
 <div id="challenges" class="section" style="display: none;">
-	<h2>Week One - Cryptography: Classic Ciphers</h2>
+	<h1>This Week's Featured Challenges</h1>
+	<p>Updates on Thursday Evenings</p>
 	<div class="card-grid">
-		<div class="card" onclick="location.href='/challenge/1'">
-			<h3>Challenge 1</h3>
-			<p>Basic Caesar cipher. Can you decode it?</p>
+		{{range .Challenges}}
+		<div class="card"
+			hx-get="/challenge/{{.Challenge_id}}"
+			hx-target="#challenge-details"
+     		hx-swap="innerHTML">
+			<h3>{{.Challenge_title}}</h3>
+			<p>{{.Challenge_points}} points</p>
 		</div>
-		<div class="card" onclick="location.href='/challenge/2'">
-			<h3>Challenge 2</h3>
-			<p>Decode this base64 string to find the flag.</p>
-		</div>
-		<div class="card" onclick="location.href='/challenge/3'">
-	  		<h3>Challenge 3</h3>
-	  		<p>Simple substitution cipher. Think frequency!</p>
-		</div>
-		<div class="card" onclick="location.href='/challenge/4'">
-			<h3>Challenge 4</h3>
-			<p>Can you reverse this hash?</p>
-		</div>
-		<div class="card" onclick="location.href='/challenge/5'">
-			<h3>Challenge 5</h3>
-			<p>Intermediate crypto puzzle. Argon2 inside.</p>
-		</div>
+		{{end}}
+		
 	</div>
+	<div id="challenge-details" class="challenge-detail-box"></div>
 </div>
 <!------------------------------------------------->
 <div id="scoreboard" class="section" style="display: none;">
-	<p>Coming Soon</p>
+	<h1>Coming Soon</h1>
 </div>
 <!------------------------------------------------->
 <script>
