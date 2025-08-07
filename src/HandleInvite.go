@@ -34,10 +34,6 @@ func (app *application) HandleInviteGet(w http.ResponseWriter, r *http.Request) 
 		"Token": invite_token,
 	}
 
-	// fmt.Printf("Token value: '%s'\n", invite_token)
-	// fmt.Printf("Token is of type %T\n", invite_token)
-	// fmt.Printf("Token length: %d\n", len(invite_token))
-
 	statement := "SELECT invite_id, invite_expiry, invite_claimed_time FROM INVITES WHERE invite_token = ?;"
 	err := app.db.QueryRow(statement, invite_token).Scan(&invite_id, &invite_expiry, &invite_claimed)
 

@@ -49,6 +49,14 @@ func (app *application) HandleChallengeGet(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *application) HandleChallengePost(w http.ResponseWriter, r *http.Request) {
+
+	normalise := func(s string) string {
+		s = strings.ToLower(strings.TrimSpace(s))
+		s = strings.ReplaceAll(s, "\n", "")
+		s = strings.ReplaceAll(s, "\r", "")
+		return s
+	}
+
 	var dbFlags string
 	var user_id int
 	var alreadySolved bool
@@ -66,11 +74,12 @@ func (app *application) HandleChallengePost(w http.ResponseWriter, r *http.Reque
 	}
 
 	err := r.ParseForm()
-	userFlag := r.FormValue("flag")
 	if err != nil {
-		log.Print("Error HandleChallengePost() 100 - Couldn't parse user flag")
+		log.Print("Error HandleChallengePost() 100 - Couldn't parse user submission")
 		return
 	}
+
+	userFlag := normalise(r.FormValue("flag"))
 
 	challenge_id := r.PathValue("id")
 	statement := "SELECT challenge_flags FROM CHALLENGES WHERE challenge_id = ?;"
@@ -85,7 +94,7 @@ func (app *application) HandleChallengePost(w http.ResponseWriter, r *http.Reque
 
 	flagIsCorrect := false
 	for _, f := range flagList {
-		if strings.TrimSpace(f) == userFlag {
+		if normalise(f) == userFlag {
 			flagIsCorrect = true
 			break
 		}
@@ -127,5 +136,4 @@ func (app *application) HandleChallengePost(w http.ResponseWriter, r *http.Reque
 		log.Print(email, " did not solve Challenge ", challenge_id)
 		w.Write([]byte("<br>Incorrect. Keep trying!"))
 	}
-
 }
