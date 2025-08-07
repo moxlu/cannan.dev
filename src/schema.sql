@@ -1,14 +1,17 @@
+-- Using sqlite3 (Precompiled Binaries for Linux)
+-- https://www.sqlite.org/download.html
+--
 -- To initialise:
--- cd run
+-- cd run 
 -- ./sqlite3 cannan.db
 -- PRAGMA foreign_keys = 1;  (also do this at the start of every connection)
 -- .read ../src/schema.sql
--- .read ../src/testdata.sql
+-- .read init.sql
 
 CREATE TABLE USERS (
 	user_id INTEGER PRIMARY KEY AUTOINCREMENT,
 	user_email TEXT NOT NULL UNIQUE,
-	user_name TEXT,
+	user_name TEXT NOT NULL,
 	user_hash TEXT NOT NULL,
 	user_description TEXT,
 	user_score INTEGER DEFAULT 0,
@@ -16,10 +19,10 @@ CREATE TABLE USERS (
 	user_isbot BOOLEAN DEFAULT 0,
 	user_ishidden BOOLEAN DEFAULT 0,
 	user_isdeactivated BOOLEAN DEFAULT 0,
-	user_mustchangename BOOLEAN DEFAULT 1,
-	user_mustchangepassword BOOLEAN DEFAULT 1,
-	user_invited DATETIME DEFAULT CURRENT_TIMESTAMP,
-	user_joined DATETIME
+	user_mustchangename BOOLEAN DEFAULT 0,
+	user_mustchangepassword BOOLEAN DEFAULT 0,
+	user_invited DATETIME,
+	user_joined DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IPS (
@@ -39,7 +42,7 @@ CREATE TABLE CHALLENGES (
 	challenge_tags TEXT,
 	challenge_description TEXT,
 	challenge_points INTEGER DEFAULT 0,
-	challenge_flag TEXT NOT NULL,
+	challenge_flags TEXT NOT NULL,
 	challenge_hidden BOOLEAN DEFAULT 0,
 	challenge_start DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -103,9 +106,9 @@ CREATE TABLE CONFIG (
 
 CREATE TABLE INVITES (
 	invite_id INTEGER PRIMARY KEY AUTOINCREMENT,
-	invite_email TEXT NOT NULL,
 	invite_token TEXT NOT NULL UNIQUE,
-	invite_issued DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	invite_expiry DATETIME NOT NULL,
-	invite_claimed DATETIME
+	invite_issued DATETIME DEFAULT CURRENT_TIMESTAMP,
+	invite_expiry DATETIME,
+	invite_claimed_by TEXT,
+	invite_claimed_time DATETIME
 );
