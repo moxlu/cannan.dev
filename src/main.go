@@ -55,7 +55,6 @@ func main() {
 	}
 	defer db.Close()
 
-	// Prepare session data
 	key1, err := os.ReadFile("../run/keys.txt")
 	if err != nil {
 		log.Print(err.Error())
