@@ -20,14 +20,32 @@
 		<div class="card"
 			hx-get="/challenge/{{.Challenge_id}}"
 			hx-target="#challenge-details"
-     		hx-swap="innerHTML">
+     		hx-swap="innerHTML"
+			hx-on::after-on-load="openModal()">
 			<h3>{{.Challenge_title}}</h3>
 			<p>{{.Challenge_points}} points</p>
 		</div>
 		{{end}}
-		
 	</div>
-	<div id="challenge-details" class="challenge-detail-box"></div>
+	<br><h1>Other Challenges</h1><br>
+	<div class="card-grid">
+		{{range .Challenges}}
+		<div class="card"
+			hx-get="/challenge/{{.Challenge_id}}"
+			hx-target="#challenge-details"
+     		hx-swap="innerHTML"
+			hx-on::after-on-load="openModal()">
+			<h3>{{.Challenge_title}}</h3>
+			<p>{{.Challenge_points}} points</p>
+		</div>
+		{{end}}
+	</div>
+	<div id="challenge-modal" class="modal" style="display:none;">
+		<div class="modal-content">
+			<span class="close" onclick="closeModal()">&times;</span>
+			<div id="challenge-details"></div>
+		</div>
+	</div>
 </div>
 <!------------------------------------------------->
 <div id="scoreboard" class="section" style="display: none;">
@@ -43,5 +61,18 @@ function showSection(idToShow) {
 		section.style.display = id === idToShow ? 'block' : 'none';
 	}
   });
+}
+function openModal() {
+	document.getElementById("challenge-modal").style.display = "block";
+}
+function closeModal() {
+	document.getElementById("challenge-modal").style.display = "none";
+}
+// Close modal on background click
+window.onclick = function(event) {
+	const modal = document.getElementById("challenge-modal");
+	if (event.target === modal) {
+		closeModal();
+	}
 }
 </script>

@@ -1,8 +1,12 @@
 <h2>{{.Challenge_title}}</h2>
 <h3>{{.Challenge_points}} points</h3><br>
-{{.Challenge_description}}
+<div class="challenge-description">{{.Challenge_description}}</div>
+<div class="challenge-form">
 <form hx-post="/challenge/{{.Challenge_id}}" hx-target="#result">
-<p><input type="text" placeholder="flag{this_is_an_example}" name="flag" required>
-<button type="submit" class="flag-button">Submit</button></p>
+<div class="container-input-flag-and-button-flag">
+    <input class="input-flag" type="text"  placeholder="flag{this_is_an_example}" name="flag" required>
+    <button class="button-flag" type="submit" >Submit</button>
+</div>
 <div id="result"></div>
 </form>
+</div>

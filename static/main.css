@@ -2,17 +2,16 @@
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
-	font-family: sans-serif;
+	font-family: Helvetica, Arial, sans-serif;
 }
 
 html {
 	background-color: #922;
 	color: #000;
 	text-align: center;
-	font-family: Arial, Helvetica, sans-serif;
 }
 
-input[type="text"], input[type="password"] {
+.input-login {
 	width: 400px;
 	padding: 10px;
 	margin-top: 20px;
@@ -21,7 +20,7 @@ input[type="text"], input[type="password"] {
 	font-size: 20px;
 }
 
-.login-button {
+.button-login {
 	width: 400px;
 	padding: 10px;
 	border: 1px solid #f9f9f9;
@@ -30,13 +29,30 @@ input[type="text"], input[type="password"] {
 	margin-top: 20px;
 }
 
-.flag-button {
-	width: 200px;
+.container-input-flag-and-button-flag {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	justify-content: center;
+	align-items: center; /* vertical centering */
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+.input-flag{
+	flex: 1;
 	padding: 10px;
 	border: 1px solid #f9f9f9;
 	border-radius: 5px;
 	font-size: 20px;
-	margin-top: 20px;
+}
+
+.button-flag {
+	width: 150px;
+	padding: 10px;
+	border: 1px solid #f9f9f9;
+	border-radius: 5px;
+	font-size: 20px;
 }
 
 .schedule {
@@ -64,7 +80,7 @@ input[type="text"], input[type="password"] {
 	background-color: #9d79e2;
 	color: #000;
 	padding: 10px;
-	font-size: 24px;
+	font-size: 20px;
 	border: none;
 	border-radius: 5px;
 	cursor: pointer;
@@ -129,15 +145,42 @@ input[type="text"], input[type="password"] {
 	color: #555;
 }
 
-.challenge-detail-box{
-	width: 900px;
-	margin: auto;
+.modal {
+	display: none; 
+	position: fixed; 
+	z-index: 9999; 
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0,0,0,0.7);
+}
 
-	background-color: #ddd;
+.modal-content {
+	position: relative;
+	background-color: #9d79e2;
+	margin: 10% auto;
 	padding: 20px;
-	align-items: left;
-	align-content: left;
+	border-radius: 8px;
+	width: 80%;
+	max-width: 800px;
+	box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.close {
+	position: absolute;
+	top: 0px;   /* smaller = closer to top */
+	right: 18px;
+	color: #aaa;
+	float: right;
+	font-size: 60px;
+	font-weight: bold;
+	cursor: pointer;
+}
+.close:hover {
+	color: black;
+}
+
+.challenge-description{
 	text-align: left;
-	box-shadow: 0 5px 10px rgba(0,0,0,0.5);
-	border-radius: 20px;
 }
