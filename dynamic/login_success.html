@@ -1,7 +1,7 @@
 <div class="toolbar">
-	<button class="toolbar-button" onclick="showSection('noticeboard')">Noticeboard</button>
-	<button class="toolbar-button" onclick="showSection('challenges')">Challenges</button>
-	<button class="toolbar-button" onclick="showSection('scoreboard')">Scoreboard</button>
+	<button class="button-toolbar" onclick="showSection('noticeboard')">Noticeboard</button>
+	<button class="button-toolbar" onclick="showSection('challenges')">Challenges</button>
+	<button class="button-toolbar" onclick="showSection('scoreboard')">Scoreboard</button>
 </div>
 <!------------------------------------------------->
 <div id="noticeboard" class="section">
@@ -14,7 +14,7 @@
 <!------------------------------------------------->
 <div id="challenges" class="section" style="display: none;">
 	<h1>This Week's Featured Challenges</h1>
-	<p>Updates on Thursday Evenings</p>
+	<p>New challenges appear every Thursday Evening.</p>
 	<div class="card-grid">
 		{{range .Challenges}}
 		<div class="card"
@@ -27,7 +27,7 @@
 		</div>
 		{{end}}
 	</div>
-	<br><h1>Other Challenges</h1><br>
+	<h1>Other Challenges</h1>
 	<div class="card-grid">
 		{{range .Challenges}}
 		<div class="card"
@@ -49,7 +49,17 @@
 </div>
 <!------------------------------------------------->
 <div id="scoreboard" class="section" style="display: none;">
-	<h1>Coming Soon</h1>
+	<h1>This Week's Featured Challenges</h1>
+	<p>Weekly scores reset every Thursday Afternoon.</p>
+	<table class="table-score">
+	<thead><tr><th>Rank</th><th>Name</th><th>Description</th><th>Score</th></tr></thead>
+	<div id="scores-weekly"></div>
+	</table>
+	<h1>All Challenges</h1>
+	<table class="table-score" cellspacing="0" cellpadding="8" >
+	<thead><tr><th>Rank</th><th>Name</th><th>Description</th><th>Score</th></tr></thead>
+	<div id="scores-all"></div>
+	</table>
 </div>
 <!------------------------------------------------->
 <script>

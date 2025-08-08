@@ -4,7 +4,16 @@
 <div class="challenge-form">
 <form hx-post="/challenge/{{.Challenge_id}}" hx-target="#result">
 <div class="container-input-flag-and-button-flag">
-    <input class="input-flag" type="text"  placeholder="flag{this_is_an_example}" name="flag" required>
+    <input
+        class="input-flag"
+        type="text"
+        placeholder="flag{this_is_an_example}"
+        name="flag"
+        required
+        autocomplete="off" 
+        autocorrect="off" 
+        autocapitalize="off" 
+        spellcheck="false">
     <button class="button-flag" type="submit" >Submit</button>
 </div>
 <div id="result"></div>
