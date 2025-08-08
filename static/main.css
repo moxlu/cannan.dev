@@ -36,7 +36,6 @@ html {
 	justify-content: center;
 	align-items: center; /* vertical centering */
 	margin-top: 20px;
-	margin-bottom: 20px;
 }
 
 .input-flag{
@@ -55,19 +54,6 @@ html {
 	font-size: 20px;
 }
 
-.schedule {
-	margin: 0 auto;
-	border-collapse: collapse;
-	text-align: center;
-	border: 1px solid black;
-}
-
-.schedule th,
-.schedule td {
-	border: 1px solid black;
-	padding: 8px;
-}
-
 .toolbar {
 	display: flex;
 	justify-content: center;
@@ -76,34 +62,36 @@ html {
 	gap: 10px;
 }
 
-.toolbar-button {
-	background-color: #9d79e2;
+.button-toolbar {
+	background-color: #97e;
 	color: #000;
-	padding: 10px;
+	padding-top: 12px;
+	padding-bottom: 8px;
 	font-size: 20px;
 	border: none;
-	border-radius: 5px;
+	border-radius: 10px;
 	cursor: pointer;
 	transition: background-color 0.2s ease;
-	width: 300px;
+	width: 320px;
 }
 
-.toolbar-button:hover {
+.button-toolbar:hover {
 	background-color: #0056b3;
 }
 
 .section {
 	max-width: 1000px;
 	margin: auto;
-	padding: 20px;
+	padding: 10px;
+
 }
 
 .notice {
 	background-color: #f9f9f9;
-	padding: 50px 100px 50px 100px;
+	padding: 20px;
 	margin-bottom: 20px;
 	box-shadow: 0 5px 10px rgba(0,0,0,0.5);
-	border-radius: 20px;
+	border-radius: 10px;
 }
 
 .notice h1 {
@@ -115,11 +103,35 @@ html {
 	color: #333;
 }
 
+.schedule {
+	margin: 0 auto;
+	border-collapse: collapse;
+	text-align: center;
+	background-color: #db9;
+}
+
+.schedule th,
+.schedule td {
+	border: 1px solid black;
+	padding: 8px;
+}
+
+.schedule th:nth-child(1),
+.schedule td:nth-child(1){
+	width: 50px;
+}
+
+.schedule th:nth-child(2),
+.schedule td:nth-child(2) {
+	width: 100px;
+}
+
 .card-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-	gap: 20px;
-	padding: 20px;
+	gap: 10px;
+	padding-top: 15px;
+	padding-bottom: 30px;
 }
 
 .card {
@@ -158,7 +170,7 @@ html {
 
 .modal-content {
 	position: relative;
-	background-color: #9d79e2;
+	background-color: #97e;
 	margin: 10% auto;
 	padding: 20px;
 	border-radius: 8px;
@@ -183,4 +195,18 @@ html {
 
 .challenge-description{
 	text-align: left;
+}
+
+.table-score{
+	border-collapse: collapse;
+	width: 100%;
+	margin: 20px auto;
+	border: 1px solid black;
+	font-size: 20px;
+	border-radius: 10px;
+}
+
+.table-score thead{
+	background-color: #97e;
+	color: white;
 }
