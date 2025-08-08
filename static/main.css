@@ -11,11 +11,15 @@ html {
 	text-align: center;
 }
 
+p {
+	margin: 1em 0;
+}
+
 .input-login {
 	width: 400px;
 	padding: 10px;
-	margin-top: 20px;
-	border: 1px solid #f9f9f9;
+	margin-bottom: 10px;
+	border: 1px solid #ddd;
 	border-radius: 5px;
 	font-size: 20px;
 }
@@ -23,10 +27,9 @@ html {
 .button-login {
 	width: 400px;
 	padding: 10px;
-	border: 1px solid #f9f9f9;
+	border: 1px solid #ddd;
 	border-radius: 5px;
 	font-size: 20px;
-	margin-top: 20px;
 }
 
 .container-input-flag-and-button-flag {
@@ -41,7 +44,7 @@ html {
 .input-flag{
 	flex: 1;
 	padding: 10px;
-	border: 1px solid #f9f9f9;
+	border: 1px solid #ddd;
 	border-radius: 5px;
 	font-size: 20px;
 }
@@ -49,7 +52,7 @@ html {
 .button-flag {
 	width: 150px;
 	padding: 10px;
-	border: 1px solid #f9f9f9;
+	border: 1px solid #ddd;
 	border-radius: 5px;
 	font-size: 20px;
 }
@@ -57,26 +60,27 @@ html {
 .toolbar {
 	display: flex;
 	justify-content: center;
-	background-color: #000;
+	background-color: #222;
 	padding: 10px;
 	gap: 10px;
 }
 
 .button-toolbar {
-	background-color: #97e;
-	color: #000;
+	background-color: #97d;
+	color: #222;
 	padding-top: 12px;
 	padding-bottom: 8px;
 	font-size: 20px;
 	border: none;
 	border-radius: 10px;
 	cursor: pointer;
-	transition: background-color 0.2s ease;
+	transition: background-color 0.3s ease, color 0.3s ease;
 	width: 320px;
 }
 
 .button-toolbar:hover {
-	background-color: #0056b3;
+	background-color: #b9f;
+	color: #000;
 }
 
 .section {
@@ -87,20 +91,16 @@ html {
 }
 
 .notice {
-	background-color: #f9f9f9;
+	background-color: #ddd;
 	padding: 20px;
 	margin-bottom: 20px;
-	box-shadow: 0 5px 10px rgba(0,0,0,0.5);
 	border-radius: 10px;
+	box-shadow: 0 5px 10px rgba(0,0,0,0.5);
 }
 
 .notice h1 {
 	margin-bottom: 10px;
-	color: #3a87ad;
-}
-
-.notice p {
-	color: #333;
+	color: #922;
 }
 
 .schedule {
@@ -112,7 +112,7 @@ html {
 
 .schedule th,
 .schedule td {
-	border: 1px solid black;
+	border: 1px solid #222;
 	padding: 8px;
 }
 
@@ -135,26 +135,18 @@ html {
 }
 
 .card {
-	background-color: #f9f9f9;
-	padding: 20px;
+	background-color: #ddd;
+	color: #222;
+	padding: 10px;
 	border-radius: 10px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 	cursor: pointer;
-	transition: transform 0.2s ease, box-shadow 0.2s ease;
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card:hover {
-	transform: translateY(-5px);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.card h3 {
-	margin-top: 0;
-}
-
-.card p {
-	margin-bottom: 0;
-	color: #555;
+	transform: translateY(-3px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 .modal {
@@ -170,7 +162,7 @@ html {
 
 .modal-content {
 	position: relative;
-	background-color: #97e;
+	background-color: #97d;
 	margin: 10% auto;
 	padding: 20px;
 	border-radius: 8px;
@@ -183,14 +175,15 @@ html {
 	position: absolute;
 	top: 0px;   /* smaller = closer to top */
 	right: 18px;
-	color: #aaa;
+	color: #ddd;
 	float: right;
 	font-size: 60px;
 	font-weight: bold;
 	cursor: pointer;
 }
+
 .close:hover {
-	color: black;
+	color: #222;
 }
 
 .challenge-description{
@@ -201,12 +194,40 @@ html {
 	border-collapse: collapse;
 	width: 100%;
 	margin: 20px auto;
-	border: 1px solid black;
+	border: 1px solid #222;
 	font-size: 20px;
 	border-radius: 10px;
 }
 
 .table-score thead{
-	background-color: #97e;
-	color: white;
+	background-color: #97d;
+	color: #222;
+}
+
+.challenge-summary{
+	width: 100%;
+	height: 100px;
+}
+
+.challenge-summary-left{
+	width: 75%;
+}
+
+.challenge-summary-right{
+	width: 25%;
+}
+
+.challenge-summary h1{
+	font-size: 50px;
+	margin-top: 10px;
+}
+
+.challenge-summary h2{
+	margin-top: 5px;
+	margin-bottom: 10px;
+}
+
+.challenge-summary p{
+	margin: 0.5em 0;
+	padding: 0;
 }

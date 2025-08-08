@@ -41,10 +41,11 @@ CREATE TABLE CHALLENGES (
 	challenge_title TEXT NOT NULL,
 	challenge_tags TEXT,
 	challenge_description TEXT,
-	challenge_points INTEGER DEFAULT 0,
 	challenge_flags TEXT NOT NULL,
+	challenge_points INTEGER DEFAULT 1,
+	challenge_featured BOOLEAN DEFAULT 0,
 	challenge_hidden BOOLEAN DEFAULT 0,
-	challenge_start DATETIME DEFAULT CURRENT_TIMESTAMP
+	challenge_uploaded DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE SOLVES (
