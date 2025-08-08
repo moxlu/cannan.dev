@@ -15,31 +15,48 @@
 <div id="challenges" class="section" style="display: none;">
 	<h1>This Week's Featured Challenges</h1>
 	<p>New challenges appear every Thursday Evening.</p>
-	<div class="card-grid">
-		{{range .Challenges}}
+	{{if .ChallengesFeatured}}
+		<div class="card-grid">
+		{{range .ChallengesFeatured}}
 		<div class="card"
 			hx-get="/challenge/{{.Challenge_id}}"
 			hx-target="#challenge-details"
      		hx-swap="innerHTML"
 			hx-on::after-on-load="openModal()">
-			<h3>{{.Challenge_title}}</h3>
-			<p>{{.Challenge_points}} points</p>
+			<table class="challenge-summary"><tr>
+			<td class="challenge-summary-left"><h2>{{.Challenge_title}}</h2>
+			<p><b>Tags: </b>{{.Challenge_tags}}</p>
+			<p>{{.Challenge_solves}} solves</p></td>
+			<td class="challenge-summary-right"><h1>{{.Challenge_points}}</h1></td>
+			</tr></table>
 		</div>
 		{{end}}
 	</div>
+	{{else}}
+	<p>No featured challenges at this time.</p><br>
+	{{end}}	
+	
 	<h1>Other Challenges</h1>
+	{{if .ChallengesOther}}
 	<div class="card-grid">
-		{{range .Challenges}}
+		{{range .ChallengesOther}}
 		<div class="card"
 			hx-get="/challenge/{{.Challenge_id}}"
 			hx-target="#challenge-details"
      		hx-swap="innerHTML"
 			hx-on::after-on-load="openModal()">
-			<h3>{{.Challenge_title}}</h3>
-			<p>{{.Challenge_points}} points</p>
+			<table class="challenge-summary"><tr>
+			<td class="challenge-summary-left"><h2>{{.Challenge_title}}</h2>
+			<p><b>Tags: </b>{{.Challenge_tags}}</p>
+			<p>{{.Challenge_solves}} solves</p></td>
+			<td class="challenge-summary-right"><h1>{{.Challenge_points}}</h1></td>
+			</tr></table>
 		</div>
 		{{end}}
 	</div>
+	{{else}}
+	<p>No other challenges at this time.</p><br>
+	{{end}}	
 	<div id="challenge-modal" class="modal" style="display:none;">
 		<div class="modal-content">
 			<span class="close" onclick="closeModal()">&times;</span>
@@ -50,7 +67,6 @@
 <!------------------------------------------------->
 <div id="scoreboard" class="section" style="display: none;">
 	<h1>This Week's Featured Challenges</h1>
-	<p>Weekly scores reset every Thursday Afternoon.</p>
 	<table class="table-score">
 	<thead><tr><th>Rank</th><th>Name</th><th>Description</th><th>Score</th></tr></thead>
 	<div id="scores-weekly"></div>

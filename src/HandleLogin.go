@@ -15,19 +15,25 @@ type Notice struct {
 }
 
 type Challenge struct {
-	Challenge_id     string
-	Challenge_title  string
-	Challenge_points string
+	Challenge_id       int
+	Challenge_title    string
+	Challenge_tags     string
+	Challenge_points   string
+	Challenge_featured bool
+	Challenge_hidden   bool
+	Challenge_solves   int
 }
 
 type PageData struct {
-	Notices    []Notice
-	Challenges []Challenge
+	Notices            []Notice
+	ChallengesFeatured []Challenge
+	ChallengesOther    []Challenge
 }
 
 func (app *application) SendLoginSuccess(w http.ResponseWriter, r *http.Request, email string) {
 	var notices []Notice
-	var challenges []Challenge
+	var challenges_featured []Challenge
+	var challenges_other []Challenge
 
 	session, _ := app.store.Get(r, "session-name")
 	session.Values["authenticated"] = true
@@ -55,28 +61,39 @@ func (app *application) SendLoginSuccess(w http.ResponseWriter, r *http.Request,
 		notices = append(notices, n)
 	}
 
-	statement = "SELECT challenge_id, challenge_title, challenge_points FROM CHALLENGES;"
+	statement = "SELECT challenge_id, challenge_title, challenge_tags, challenge_points, challenge_featured, challenge_hidden FROM CHALLENGES;"
 	rows, err = app.db.Query(statement)
 	if err != nil {
-		log.Print("Error SendLoginSuccess() 300 - Failed fetching challenges")
+		log.Print(err.Error())
+		log.Print("Error SendLoginSuccess() 300 - Failed fetching challenges from db")
 		http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
 		return
 	}
 
 	for rows.Next() {
 		var c Challenge
-		err = rows.Scan(&c.Challenge_id, &c.Challenge_title, &c.Challenge_points)
+		err = rows.Scan(&c.Challenge_id, &c.Challenge_title, &c.Challenge_tags, &c.Challenge_points, &c.Challenge_featured, &c.Challenge_hidden)
 		if err != nil {
-			log.Print("Error SendLoginSuccess() 400 - Failed processing challenges")
+			log.Print("Error SendLoginSuccess() 400 - Failed scanning challenges")
 			http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
 			return
 		}
-		challenges = append(challenges, c)
-	}
 
-	data := PageData{
-		Notices:    notices,
-		Challenges: challenges,
+		statement = "SELECT COUNT(user_id) FROM SOLVES WHERE challenge_id = ?;"
+		err = app.db.QueryRow(statement, c.Challenge_id).Scan(&c.Challenge_solves)
+		if err != nil {
+			log.Print("Error SendLoginSuccess() 450 - Failed counting solves")
+			http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
+			return
+		}
+
+		if c.Challenge_hidden {
+			continue
+		} else if c.Challenge_featured {
+			challenges_featured = append(challenges_featured, c)
+		} else {
+			challenges_other = append(challenges_other, c)
+		}
 	}
 
 	tmpl, err := template.ParseFiles("../dynamic/login_success.html")
@@ -84,6 +101,12 @@ func (app *application) SendLoginSuccess(w http.ResponseWriter, r *http.Request,
 		log.Print("Error SendLoginSuccess() 500 - Failed parsing template")
 		http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
 		return
+	}
+
+	data := PageData{
+		Notices:            notices,
+		ChallengesFeatured: challenges_featured,
+		ChallengesOther:    challenges_other,
 	}
 
 	if err := tmpl.Execute(w, data); err != nil {
