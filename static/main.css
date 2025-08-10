@@ -211,6 +211,7 @@ p {
 
 .challenge-summary-left{
 	width: 75%;
+	padding-top: 12px;
 }
 
 .challenge-summary-right{
