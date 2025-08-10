@@ -1,7 +1,7 @@
 <div class="toolbar">
 	<button class="button-toolbar" onclick="showSection('noticeboard')">Noticeboard</button>
 	<button class="button-toolbar" onclick="showSection('challenges')">Challenges</button>
-	<button class="button-toolbar" onclick="showSection('scoreboard')">Scoreboard</button>
+	<button class="button-toolbar" onclick="showSection('scoreboard')" hx-get="/scores" hx-target="#scoreboard" hx-swap="innerHTML">Scoreboard</button>
 </div>
 <!------------------------------------------------->
 <div id="noticeboard" class="section">
@@ -65,18 +65,7 @@
 	</div>
 </div>
 <!------------------------------------------------->
-<div id="scoreboard" class="section" style="display: none;">
-	<h1>This Week's Featured Challenges</h1>
-	<table class="table-score">
-	<thead><tr><th>Rank</th><th>Name</th><th>Description</th><th>Score</th></tr></thead>
-	<div id="scores-weekly"></div>
-	</table>
-	<h1>All Challenges</h1>
-	<table class="table-score" cellspacing="0" cellpadding="8" >
-	<thead><tr><th>Rank</th><th>Name</th><th>Description</th><th>Score</th></tr></thead>
-	<div id="scores-all"></div>
-	</table>
-</div>
+<div id="scoreboard" class="section" style="display: none;"></div>
 <!------------------------------------------------->
 <script>
 function showSection(idToShow) {

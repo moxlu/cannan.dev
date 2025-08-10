@@ -1,0 +1,32 @@
+<h1>This Week's Featured Challenges</h1>
+<table class="table-score">
+  <thead>
+    <tr><th>Rank</th><th>Name</th><th>Comment</th><th>Score</th></tr>
+  </thead>
+  <tbody>
+    {{range .ScoreboardFeatured}}
+    <tr>
+      <td>{{.UserRank}}</td>
+      <td>{{.UserName}}</td>
+      <td>{{if .UserDescription.Valid}}{{.UserDescription.String}}{{else}}-{{end}}</td>
+      <td>{{.UserScoreFeatured}}</td>
+    </tr>
+    {{end}}
+  </tbody>
+</table>
+<h1>All Challenges</h1>
+<table class="table-score" cellspacing="0" cellpadding="8">
+  <thead>
+    <tr><th>Rank</th><th>Name</th><th>Comment</th><th>Score</th></tr>
+  </thead>
+  <tbody>
+    {{range .ScoreboardOverall}}
+    <tr>
+      <td>{{.UserRank}}</td>
+      <td>{{.UserName}}</td>
+      <td>{{if .UserDescription.Valid}}{{.UserDescription.String}}{{else}}-{{end}}</td>
+      <td>{{.UserScoreOverall}}</td>
+    </tr>
+    {{end}}
+  </tbody>
+</table>
