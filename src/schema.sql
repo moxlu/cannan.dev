@@ -14,7 +14,6 @@ CREATE TABLE USERS (
 	user_name TEXT NOT NULL,
 	user_hash TEXT NOT NULL,
 	user_description TEXT,
-	user_score INTEGER DEFAULT 0,
 	user_isadmin BOOLEAN DEFAULT 0,
 	user_isbot BOOLEAN DEFAULT 0,
 	user_ishidden BOOLEAN DEFAULT 0,

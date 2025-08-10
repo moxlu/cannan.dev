@@ -74,6 +74,7 @@ func main() {
 	MuxPrimary.HandleFunc("POST /challenge/{id}", app.HandleChallengePost)
 	MuxPrimary.HandleFunc("GET /invite/{token}", app.HandleInviteGet)
 	MuxPrimary.HandleFunc("POST /invite/{token}", app.HandleInvitePost)
+	MuxPrimary.HandleFunc("GET /scores", app.HandleScoresGet)
 	MuxPrimary.HandleFunc("GET /brutalpost", HandleBrutalpost)
 	MuxPrimary.HandleFunc("GET /lasersharks", HandleLasersharks)
 
