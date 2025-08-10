@@ -78,10 +78,8 @@ func main() {
 	MuxPrimary.HandleFunc("GET /lasersharks", HandleLasersharks)
 
 	// Fileserver for specified static files only
-	fileServer := http.FileServer(http.Dir("../static/"))
-	MuxPrimary.Handle("GET /favicon.ico", fileServer)
-	MuxPrimary.Handle("GET /main.css", fileServer)
-	MuxPrimary.Handle("GET /robots.txt", fileServer)
+	MuxPrimary.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../static/"))))
+	MuxPrimary.Handle("GET /favicon.ico", http.FileServer(http.Dir("../static/"))) // For default browser grab
 
 	// Everything else should go to 404
 	MuxPrimary.HandleFunc("/", Handle404)

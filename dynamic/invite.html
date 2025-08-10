@@ -1,23 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<meta http-equiv="X-UA-Compatible" content="ie=edge">
-		<title>cannan.dev</title>
-		<link rel="icon" type="image/x-icon" href="../favicon.ico">
-		<link rel="stylesheet" href="../main.css">
-		<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" integrity="sha384-Akqfrbj/HpNVo8k11SXBb6TlBWmXXlYQrCSqEWmyKJe+hDm3Z/B2WVG4smwBkRVm" crossorigin="anonymous"></script>
-	</head>
-	<body>
-	    <form hx-post="/invite/{{.Token}}">
-		    <br><h1>Register for cannan.dev</h1>
-            <p>This is a unique link that will only register one user.</p>
-		    <p><input type="text" placeholder="Email" name="email" required></p>
-		    <p><input type="text" placeholder="Display Name" name="name" required></p>
-		    <p><input type="password" placeholder="Password" name="password" required></p>
-		    <p><button type="submit" class="login-button">Register</button></p>
-            
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>cannan.dev</title>
+	<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+	<link rel="stylesheet" href="/static/main.css">
+	<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js"
+		integrity="sha384-Akqfrbj/HpNVo8k11SXBb6TlBWmXXlYQrCSqEWmyKJe+hDm3Z/B2WVG4smwBkRVm"
+		crossorigin="anonymous"></script>
+</head>
+<body>
+    <form hx-post="/invite/{{.Token}}">
+	    <br><h1>Register for cannan.dev</h1>
+		<p>This is a unique link that will only register one user.</p>
+	    <p><input class="input-login" type="text" placeholder="Email" name="email" required></p>
+	    <p><input class="input-login" type="text" placeholder="Display Name" name="name" required></p>
+	    <p><input class="input-login" type="password" placeholder="Password" name="password" required></p>
+	    <p><button type="submit" class="button-login">Register</button></p>    
 	</form>
 	</body>
 </html>
