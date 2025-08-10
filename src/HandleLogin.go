@@ -30,19 +30,34 @@ type PageData struct {
 	ChallengesOther    []Challenge
 }
 
-func (app *application) SendLoginSuccess(w http.ResponseWriter, r *http.Request, email string) {
+func (app *application) SendLoginSuccess(w http.ResponseWriter, r *http.Request, user_email string) {
 	var notices []Notice
 	var challenges_featured []Challenge
 	var challenges_other []Challenge
+	var user_id int
+	var user_name string
+	var user_isadmin bool
+
+	statement := "SELECT user_id, user_name, user_isadmin FROM USERS WHERE user_email = ?;"
+	err := app.db.QueryRow(statement, user_email).Scan(&user_id, &user_name, &user_isadmin)
+	if err != nil {
+		log.Print(err.Error())
+		log.Print("Error SendLoginSuccess() 50 - Failed looking up user_id")
+		http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
+		return
+	}
 
 	session, _ := app.store.Get(r, "session-name")
 	session.Values["authenticated"] = true
-	session.Values["email"] = email
+	session.Values["user_id"] = user_id
+	session.Values["user_email"] = user_email
+	session.Values["user_name"] = user_name
+	session.Values["user_isadmin"] = user_isadmin
 	session.Save(r, w)
 
-	log.Print("Successful login: ", email)
+	log.Print("Successful login: ", session.Values["user_name"], " (", session.Values["user_email"], ")")
 
-	statement := "SELECT notice_title, notice_content FROM NOTICES;"
+	statement = "SELECT notice_title, notice_content FROM NOTICES;"
 	rows, err := app.db.Query(statement)
 	if err != nil {
 		log.Print("Error SendLoginSuccess() 100 - Failed fetching notices")

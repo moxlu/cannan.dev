@@ -163,12 +163,16 @@ p {
 .modal-content {
 	position: relative;
 	background-color: #97d;
-	margin: 10% auto;
+	margin: 5% auto;
 	padding: 20px;
 	border-radius: 8px;
-	width: 80%;
+	width: 90%;
 	max-width: 800px;
 	box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.modal-content h3 {
+	margin-top: 20px;
 }
 
 .close {
@@ -221,11 +225,6 @@ p {
 .challenge-summary h1{
 	font-size: 50px;
 	margin-top: 10px;
-}
-
-.challenge-summary h2{
-	margin-top: 5px;
-	margin-bottom: 10px;
 }
 
 .challenge-summary p{

@@ -15,13 +15,18 @@ type ChallengeDetails struct {
 	Challenge_title       string
 	Challenge_description template.HTML
 	Challenge_points      string
+	Challenge_result      template.HTML
 }
 
 func (app *application) HandleChallengeGet(w http.ResponseWriter, r *http.Request) {
 	var c ChallengeDetails
+	var alreadySolved int
 
 	c.Challenge_id = r.PathValue("id")
 	log.Print("GET Challenge ", c.Challenge_id)
+
+	session, _ := app.store.Get(r, "session-name")
+	user_id := session.Values["user_id"]
 
 	statement := "SELECT challenge_title, challenge_description, challenge_points FROM CHALLENGES WHERE challenge_id = ?;"
 	row := app.db.QueryRow(statement, c.Challenge_id)
@@ -29,7 +34,19 @@ func (app *application) HandleChallengeGet(w http.ResponseWriter, r *http.Reques
 	err := row.Scan(&c.Challenge_title, &c.Challenge_description, &c.Challenge_points)
 	if err != nil {
 		log.Print("Error HandleChallengeGet() 100 - Failed fetching challenge details")
-		http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
+		http.Error(w, "Failed fetching challenge details", http.StatusInternalServerError)
+		return
+	}
+
+	statement = "SELECT 1 FROM SOLVES WHERE user_id = ? AND challenge_id = ? LIMIT 1;"
+	err = app.db.QueryRow(statement, user_id, c.Challenge_id).Scan(&alreadySolved)
+	if err == sql.ErrNoRows {
+		c.Challenge_result = ""
+	} else if alreadySolved == 1 {
+		c.Challenge_result = "<h3>You have already solved this challenge.</h3>"
+	} else if err != nil {
+		log.Print("Error HandleChallengeGet() 150 - Failed checking if challenge is solved")
+		http.Error(w, "Failed checking if challenge is solved", http.StatusInternalServerError)
 		return
 	}
 
@@ -45,11 +62,9 @@ func (app *application) HandleChallengeGet(w http.ResponseWriter, r *http.Reques
 		log.Print(err.Error())
 		http.Error(w, "Execution error", http.StatusInternalServerError)
 	}
-
 }
 
 func (app *application) HandleChallengePost(w http.ResponseWriter, r *http.Request) {
-
 	normalise := func(s string) string {
 		s = strings.ToLower(strings.TrimSpace(s))
 		s = strings.ReplaceAll(s, "\n", "")
@@ -58,17 +73,14 @@ func (app *application) HandleChallengePost(w http.ResponseWriter, r *http.Reque
 	}
 
 	var dbFlags string
-	var user_id int
 	var alreadySolved bool
-	var email string
 
 	session, _ := app.store.Get(r, "session-name")
+	user_id := session.Values["user_id"]
+	user_email := session.Values["user_email"]
 
-	auth, authok := session.Values["authenticated"].(bool)
-	email, emailok := session.Values["email"].(string)
-	email = strings.TrimSpace(email)
-
-	if !auth || !authok || !emailok {
+	if !session.Values["authenticated"].(bool) {
+		log.Print("Error HandleChallengePost() 50 - Submitter not authorised")
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
@@ -101,16 +113,6 @@ func (app *application) HandleChallengePost(w http.ResponseWriter, r *http.Reque
 	}
 
 	if flagIsCorrect {
-		statement := "SELECT user_id FROM USERS WHERE user_email = ?;"
-		err = app.db.QueryRow(statement, email).Scan(&user_id)
-		log.Print("Email appears to be ", email)
-		log.Print("User id appears to be ", user_id)
-		if err != nil {
-			log.Print("Error HandleChallengePost() 300 - Couldn't find user_id in db")
-			w.Write([]byte("Error :("))
-			return
-		}
-
 		statement = "SELECT 1 FROM SOLVES WHERE user_id = ? AND challenge_id = ? LIMIT 1;"
 		err = app.db.QueryRow(statement, user_id, challenge_id).Scan(&alreadySolved)
 		if err == sql.ErrNoRows {
@@ -121,19 +123,19 @@ func (app *application) HandleChallengePost(w http.ResponseWriter, r *http.Reque
 				w.Write([]byte("Error :("))
 				return
 			}
-			log.Print(email, " solved Challenge ", challenge_id)
-			w.Write([]byte("<br>Solved! Well done!"))
+			log.Print(user_email, " solved Challenge ", challenge_id)
+			w.Write([]byte("<h3>Solved! Well done!</h3>"))
 
 		} else if err != nil {
 			log.Print("Error HandleChallengePost() 500 - Problem recording solved flag")
 			w.Write([]byte("Error :("))
 			return
 		} else {
-			log.Print(email, " tried to re-solve Challenge ", challenge_id)
-			w.Write([]byte("<br>You have already solved this challenge."))
+			log.Print(user_email, " tried to re-solve Challenge ", challenge_id)
+			w.Write([]byte("<h3>You have already solved this challenge.</h3>"))
 		}
 	} else {
-		log.Print(email, " did not solve Challenge ", challenge_id)
-		w.Write([]byte("<br>Incorrect. Keep trying!"))
+		log.Print(user_email, " did not solve Challenge ", challenge_id)
+		w.Write([]byte("<h3>Incorrect. Keep trying!</h3>"))
 	}
 }
