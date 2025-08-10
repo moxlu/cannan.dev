@@ -79,6 +79,7 @@ func main() {
 
 	// Fileserver for specified static files only
 	MuxPrimary.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../static/"))))
+	MuxPrimary.Handle("GET /challengeFiles/", http.StripPrefix("/challengeFiles/", http.FileServer(http.Dir("../challengeFiles/"))))
 	MuxPrimary.Handle("GET /favicon.ico", http.FileServer(http.Dir("../static/"))) // For default browser grab
 
 	// Everything else should go to 404
