@@ -12,7 +12,7 @@
 		crossorigin="anonymous"></script>
 </head>
 <body>
-    <form hx-post="/invite/{{.Token}}">
+    <form method="POST" action="/invite/{{.Token}}" >
 	    <br><h1>Register for cannan.dev</h1>
 		<p>This is a unique link that will only register one user.</p>
 	    <p><input class="input-login" type="text" placeholder="Email" name="email" required></p>
