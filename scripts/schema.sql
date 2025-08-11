@@ -1,12 +1,4 @@
--- Using sqlite3 (Precompiled Binaries for Linux)
--- https://www.sqlite.org/download.html
---
--- To initialise:
--- cd run 
--- ./sqlite3 cannan.db
--- PRAGMA foreign_keys = 1;  (also do this at the start of every connection)
--- .read ../src/schema.sql
--- .read init.sql
+PRAGMA foreign_keys = 1;
 
 CREATE TABLE USERS (
 	user_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,17 +14,6 @@ CREATE TABLE USERS (
 	user_mustchangepassword BOOLEAN DEFAULT 0,
 	user_invited DATETIME,
 	user_joined DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IPS (
-	ip_id INTEGER PRIMARY KEY AUTOINCREMENT,
-	user_id INTEGER,
-	ip_address TEXT NOT NULL UNIQUE,
-	ip_first_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
-	ip_last_seen DATETIME,
-	ip_days_seen INTEGER DEFAULT 1,
-	ip_note TEXT,
-	FOREIGN KEY (user_id) REFERENCES USERS(user_id)
 );
 
 CREATE TABLE CHALLENGES (
@@ -111,4 +92,15 @@ CREATE TABLE INVITES (
 	invite_expiry DATETIME,
 	invite_claimed_by TEXT,
 	invite_claimed_time DATETIME
+);
+
+CREATE TABLE IPS (
+	ip_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	user_id INTEGER,
+	ip_address TEXT NOT NULL UNIQUE,
+	ip_first_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+	ip_last_seen DATETIME,
+	ip_days_seen INTEGER DEFAULT 1,
+	ip_note TEXT,
+	FOREIGN KEY (user_id) REFERENCES USERS(user_id)
 );

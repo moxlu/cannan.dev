@@ -22,11 +22,9 @@ func (app *application) HandleChallengeGet(w http.ResponseWriter, r *http.Reques
 	var c ChallengeDetails
 	var alreadySolved int
 
-	c.Challenge_id = r.PathValue("id")
-	log.Print("GET Challenge ", c.Challenge_id)
-
 	session, _ := app.store.Get(r, "session-name")
 	user_id := session.Values["user_id"]
+	c.Challenge_id = r.PathValue("id")
 
 	statement := "SELECT challenge_title, challenge_description, challenge_points FROM CHALLENGES WHERE challenge_id = ?;"
 	row := app.db.QueryRow(statement, c.Challenge_id)

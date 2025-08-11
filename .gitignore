@@ -1,2 +1,10 @@
 run/
 challengeFiles/
+
+# What's in run?
+# sqlite3
+# cannan.db
+# init.sql - contains initial users, notices and challenges
+# session.key - for cookies
+# cert.pem - for TLS
+# key.pem - for TLS

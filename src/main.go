@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"html/template"
 	"log"
 	"net/http"
@@ -39,34 +40,37 @@ func Handle404(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// Start Database
-	db, err := sql.Open("sqlite3", "../run/cannan.db")
-	if err != nil {
-		log.Print(err.Error())
-		return
-	}
+	addr := flag.String("addr", ":4000", "HTTPS network address")
+	dsn := flag.String("dsn", "../run/cannan.db", "SQLite database file")
+	certFile := flag.String("cert", "../run/fullchain.pem", "TLS certificate file")
+	keyFile := flag.String("key", "../run/privkey.pem", "TLS private key file")
+	flag.Parse()
 
-	_, err = db.Exec("PRAGMA foreign_keys = ON;")
+	// Start Database
+	db, err := sql.Open("sqlite3", *dsn)
 	if err != nil {
-		log.Print(err.Error())
-		return
-	} else {
-		log.Print("Database loaded OK")
+		log.Fatalf("Database open error: %v", err)
 	}
 	defer db.Close()
 
-	key1, err := os.ReadFile("../run/keys.txt")
+	if _, err := db.Exec("PRAGMA foreign_keys = ON;"); err != nil {
+		log.Fatalf("Failed to enable foreign keys: %v", err)
+	}
+	log.Print("Database loaded OK")
+
+	// Session key
+	sessionKey, err := os.ReadFile("../run/session.key")
 	if err != nil {
-		log.Print(err.Error())
+		log.Fatalf("Session key read error: %v", err)
 		return
 	}
 
 	app := &application{
 		db:    db,
-		store: sessions.NewCookieStore(key1),
+		store: sessions.NewCookieStore(sessionKey),
 	}
 
-	// Start mux and handlers
+	// Routes
 	MuxPrimary := http.NewServeMux()
 	MuxPrimary.HandleFunc("GET /{$}", app.HandleIndex)
 	MuxPrimary.HandleFunc("POST /login", app.HandleLogin)
@@ -78,15 +82,18 @@ func main() {
 	MuxPrimary.HandleFunc("GET /brutalpost", HandleBrutalpost)
 	MuxPrimary.HandleFunc("GET /lasersharks", HandleLasersharks)
 
-	// Fileserver for specified static files only
+	// Static files
 	MuxPrimary.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../static/"))))
 	MuxPrimary.Handle("GET /challengeFiles/", http.StripPrefix("/challengeFiles/", http.FileServer(http.Dir("../challengeFiles/"))))
 	MuxPrimary.Handle("GET /favicon.ico", http.FileServer(http.Dir("../static/"))) // For default browser grab
 
-	// Everything else should go to 404
+	// Catch-all 404
 	MuxPrimary.HandleFunc("/", Handle404)
 
-	log.Print("Starting server on :4000")
-	err = http.ListenAndServe(":4000", MuxPrimary)
-	log.Print(err.Error())
+	//Start HTTPS server
+	log.Printf("Starting HTTPS server on %s", *addr)
+	err = http.ListenAndServeTLS(*addr, *certFile, *keyFile, MuxPrimary)
+	if err != nil {
+		log.Fatalf("HTTPS server failed: %v", err)
+	}
 }
