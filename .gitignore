@@ -2,9 +2,8 @@ run/
 challengeFiles/
 
 # What's in run?
-# sqlite3
 # cannan.db
-# init.sql - contains initial users, notices and challenges
-# session.key - for cookies
-# cert.pem - for TLS
-# key.pem - for TLS
+# init.sql - contains initial users, notices and challenges. scp direct from dev.
+# session.key - for cookies. See generate_session_key.sh
+# fullchain.pem - for TLS. In prod, this is ln to certbot. In dev, this is selfsigned. 
+# privkey.pem - for TLS. In prod, this is ln to certbot. In dev, this is selfsigned.

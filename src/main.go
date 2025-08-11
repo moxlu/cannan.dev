@@ -40,10 +40,11 @@ func Handle404(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	// Default flags for dev, prod flags are set in cannan.service
 	addr := flag.String("addr", ":4000", "HTTPS network address")
 	dsn := flag.String("dsn", "../run/cannan.db", "SQLite database file")
-	certFile := flag.String("cert", "../run/fullchain.pem", "TLS certificate file")
-	keyFile := flag.String("key", "../run/privkey.pem", "TLS private key file")
+	certFile := flag.String("certFile", "../run/fullchain.pem", "TLS certificate file")
+	keyFile := flag.String("keyFile", "../run/privkey.pem", "TLS private key file")
 	flag.Parse()
 
 	// Start Database
