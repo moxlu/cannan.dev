@@ -5,8 +5,8 @@ After=network.target
 [Service]
 User=cannanbot
 Group=ssl-cert
-WorkingDirectory=/opt/cannan.dev
-ExecStart=/opt/cannan.dev/cannanapp -addr ":443" -certFile "/opt/cannan.dev/run/fullchain.pem" -keyFile "/opt/cannan.dev/run/privkey.pem"
+WorkingDirectory=/opt/cannan.dev/run/
+ExecStart=/opt/cannan.dev/run/cannanapp -addr ":443" -certFile "/opt/cannan.dev/run/fullchain.pem" -keyFile "/opt/cannan.dev/run/privkey.pem"
 Restart=on-failure
 
 [Install]
