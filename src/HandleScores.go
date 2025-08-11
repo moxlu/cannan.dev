@@ -11,13 +11,14 @@ import (
 )
 
 type ScoreboardEntry struct {
-	UserRank          int
-	UserID            int
-	UserName          string
-	UserDescription   sql.NullString
-	UserScoreFeatured int
-	UserScoreOverall  int
-	UserLastSolve     sql.NullTime
+	UserRank              int
+	UserID                int
+	UserName              string
+	UserDescription       sql.NullString
+	UserScoreFeatured     int
+	UserScoreOverall      int
+	UserLastSolveFeatured sql.NullTime // for future use
+	UserLastSolveOverall  sql.NullTime // for future use
 }
 
 type ScoreData struct {
