@@ -7,6 +7,7 @@ User=cannanbot
 Group=ssl-cert
 WorkingDirectory=/opt/cannan.dev/run/
 ExecStart=/opt/cannan.dev/run/cannanapp -addr ":443" -certFile "/opt/cannan.dev/run/fullchain.pem" -keyFile "/opt/cannan.dev/run/privkey.pem"
+AmbientCapabilities=CAP_NET_BIND_SERVICE
 Restart=on-failure
 
 [Install]
