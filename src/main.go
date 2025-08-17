@@ -83,7 +83,7 @@ func main() {
 	MuxPrimary.HandleFunc("GET /brutalpost", HandleBrutalpost)
 	MuxPrimary.HandleFunc("GET /lasersharks", HandleLasersharks)
 
-	// Static files
+	// Static files - note users can lookup directory
 	MuxPrimary.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../static/"))))
 	MuxPrimary.Handle("GET /challengeFiles/", http.StripPrefix("/challengeFiles/", http.FileServer(http.Dir("../challengeFiles/"))))
 	MuxPrimary.Handle("GET /favicon.ico", http.FileServer(http.Dir("../static/"))) // For default browser grab

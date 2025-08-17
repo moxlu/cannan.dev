@@ -31,8 +31,8 @@ func (app *application) HandleChallengeGet(w http.ResponseWriter, r *http.Reques
 
 	err := row.Scan(&c.Challenge_title, &c.Challenge_description, &c.Challenge_points)
 	if err != nil {
-		log.Print("Error HandleChallengeGet() 100 - Failed fetching challenge details")
-		http.Error(w, "Failed fetching challenge details", http.StatusInternalServerError)
+		log.Print("Error HandleChallengeGet 10: ", err.Error())
+		http.Error(w, "Could not fetch challenge details", http.StatusInternalServerError)
 		return
 	}
 
@@ -43,22 +43,21 @@ func (app *application) HandleChallengeGet(w http.ResponseWriter, r *http.Reques
 	} else if alreadySolved == 1 {
 		c.Challenge_result = "<h3>You have already solved this challenge.</h3>"
 	} else if err != nil {
-		log.Print("Error HandleChallengeGet() 150 - Failed checking if challenge is solved")
-		http.Error(w, "Failed checking if challenge is solved", http.StatusInternalServerError)
+		log.Print("Error HandleChallengeGet 20: ", err.Error())
+		http.Error(w, "Could not check if challenge is solved", http.StatusInternalServerError)
 		return
 	}
 
 	tmpl, err := template.ParseFiles("../dynamic/challenge.html")
 	if err != nil {
-		log.Print("Error HandleChallengeGet() 200 - Failed parsing template")
-		http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
+		log.Print("Error HandleChallengeGet 30: ", err.Error())
+		http.Error(w, "Could not display challenge details", http.StatusInternalServerError)
 		return
 	}
 
 	if err := tmpl.Execute(w, c); err != nil {
-		log.Print("Error HandleChallengeGet() 300 - Failed merging and serving template")
-		log.Print(err.Error())
-		http.Error(w, "Execution error", http.StatusInternalServerError)
+		log.Print("Error HandleChallengeGet 40: ", err.Error())
+		http.Error(w, "Could not display challenge details", http.StatusInternalServerError)
 	}
 }
 
@@ -78,14 +77,15 @@ func (app *application) HandleChallengePost(w http.ResponseWriter, r *http.Reque
 	user_email := session.Values["user_email"]
 
 	if !session.Values["authenticated"].(bool) {
-		log.Print("Error HandleChallengePost() 50 - Submitter not authorised")
+		log.Print("Alert HandleChallengePost 10: Submitter not authorised")
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
 	err := r.ParseForm()
 	if err != nil {
-		log.Print("Error HandleChallengePost() 100 - Couldn't parse user submission")
+		log.Print("Error HandleChallengePost 20: ", err.Error())
+		http.Error(w, "Error processing submission", http.StatusInternalServerError)
 		return
 	}
 
@@ -95,8 +95,8 @@ func (app *application) HandleChallengePost(w http.ResponseWriter, r *http.Reque
 	statement := "SELECT challenge_flags FROM CHALLENGES WHERE challenge_id = ?;"
 	err = app.db.QueryRow(statement, challenge_id).Scan(&dbFlags)
 	if err != nil {
-		log.Print("Error HandleChallengePost() 200 - Failed fetching flags from db")
-		http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
+		log.Print("Error HandleChallengePost 30: ", err.Error())
+		http.Error(w, "Error processing submission", http.StatusInternalServerError)
 		return
 	}
 
@@ -117,16 +117,16 @@ func (app *application) HandleChallengePost(w http.ResponseWriter, r *http.Reque
 			statement = "INSERT INTO SOLVES (user_id, challenge_id) VALUES (?, ?);"
 			_, err = app.db.Exec(statement, user_id, challenge_id)
 			if err != nil {
-				log.Print("Error HandleChallengePost() 400 - Problem recording solved flag")
-				w.Write([]byte("Error :("))
+				log.Print("Error HandleChallengePost 40: ", err.Error())
+				http.Error(w, "Error processing submission", http.StatusInternalServerError)
 				return
 			}
 			log.Print(user_email, " solved Challenge ", challenge_id)
 			w.Write([]byte("<h3>Solved! Well done!</h3>"))
 
 		} else if err != nil {
-			log.Print("Error HandleChallengePost() 500 - Problem recording solved flag")
-			w.Write([]byte("Error :("))
+			log.Print("Error HandleChallengePost 50: ", err.Error())
+			http.Error(w, "Error processing submission", http.StatusInternalServerError)
 			return
 		} else {
 			log.Print(user_email, " tried to re-solve Challenge ", challenge_id)

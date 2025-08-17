@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"html/template"
 	"log"
 	"net/http"
@@ -41,18 +42,18 @@ func (app *application) SendLoginSuccess(w http.ResponseWriter, r *http.Request,
 	statement := "SELECT user_id, user_name, user_isadmin FROM USERS WHERE user_email = ?;"
 	err := app.db.QueryRow(statement, user_email).Scan(&user_id, &user_name, &user_isadmin)
 	if err != nil {
-		log.Print(err.Error())
-		log.Print("Error SendLoginSuccess() 50 - Failed looking up user_id")
-		http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
+		log.Print("Error SendLoginSuccess 10: ", err.Error())
+		http.Error(w, "Error loading main page", http.StatusInternalServerError)
 		return
 	}
 
 	session, _ := app.store.Get(r, "session-name")
 	session.Values["authenticated"] = true
-	session.Values["user_id"] = user_id
 	session.Values["user_email"] = user_email
-	session.Values["user_name"] = user_name
+	session.Values["user_id"] = user_id
 	session.Values["user_isadmin"] = user_isadmin
+	session.Values["user_name"] = user_name
+	session.Values["user_RemoteAddr"] = r.RemoteAddr
 	session.Save(r, w)
 
 	log.Print("Successful login: ", session.Values["user_name"], " (", session.Values["user_email"], ")")
@@ -60,8 +61,8 @@ func (app *application) SendLoginSuccess(w http.ResponseWriter, r *http.Request,
 	statement = "SELECT notice_title, notice_content FROM NOTICES;"
 	rows, err := app.db.Query(statement)
 	if err != nil {
-		log.Print("Error SendLoginSuccess() 100 - Failed fetching notices")
-		http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
+		log.Print("Error SendLoginSuccess 20: ", err.Error())
+		http.Error(w, "Error loading main page", http.StatusInternalServerError)
 		return
 	}
 
@@ -69,19 +70,29 @@ func (app *application) SendLoginSuccess(w http.ResponseWriter, r *http.Request,
 		var n Notice
 		err = rows.Scan(&n.Notice_title, &n.Notice_content)
 		if err != nil {
-			log.Print("Error SendLoginSuccess() 200 - Failed processing notices")
-			http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
+			log.Print("Error SendLoginSuccess 30: ", err.Error())
+			http.Error(w, "Error loading main page", http.StatusInternalServerError)
 			return
 		}
 		notices = append(notices, n)
 	}
 
-	statement = "SELECT challenge_id, challenge_title, challenge_tags, challenge_points, challenge_featured, challenge_hidden FROM CHALLENGES;"
+	statement = `
+		SELECT 
+			challenge_id, 
+			challenge_title, 
+			challenge_tags, 
+			challenge_points, 
+			challenge_featured, 
+			challenge_hidden 
+		FROM CHALLENGES 
+		ORDER BY challenge_points ASC, challenge_title ASC;
+	`
+
 	rows, err = app.db.Query(statement)
 	if err != nil {
-		log.Print(err.Error())
-		log.Print("Error SendLoginSuccess() 300 - Failed fetching challenges from db")
-		http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
+		log.Print("Error SendLoginSuccess 40: ", err.Error())
+		http.Error(w, "Error loading main page", http.StatusInternalServerError)
 		return
 	}
 
@@ -89,16 +100,16 @@ func (app *application) SendLoginSuccess(w http.ResponseWriter, r *http.Request,
 		var c Challenge
 		err = rows.Scan(&c.Challenge_id, &c.Challenge_title, &c.Challenge_tags, &c.Challenge_points, &c.Challenge_featured, &c.Challenge_hidden)
 		if err != nil {
-			log.Print("Error SendLoginSuccess() 400 - Failed scanning challenges")
-			http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
+			log.Print("Error SendLoginSuccess 50: ", err.Error())
+			http.Error(w, "Error loading main page", http.StatusInternalServerError)
 			return
 		}
 
 		statement = "SELECT COUNT(user_id) FROM SOLVES WHERE challenge_id = ?;"
 		err = app.db.QueryRow(statement, c.Challenge_id).Scan(&c.Challenge_solves)
 		if err != nil {
-			log.Print("Error SendLoginSuccess() 450 - Failed counting solves")
-			http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
+			log.Print("Error SendLoginSuccess 60: ", err.Error())
+			http.Error(w, "Error loading main page", http.StatusInternalServerError)
 			return
 		}
 
@@ -111,10 +122,10 @@ func (app *application) SendLoginSuccess(w http.ResponseWriter, r *http.Request,
 		}
 	}
 
-	tmpl, err := template.ParseFiles("../dynamic/login_success.html")
+	tmpl, err := template.ParseFiles("../dynamic/main.html")
 	if err != nil {
-		log.Print("Error SendLoginSuccess() 500 - Failed parsing template")
-		http.Error(w, "Login successful but error loading main page", http.StatusInternalServerError)
+		log.Print("Error SendLoginSuccess 70: ", err.Error())
+		http.Error(w, "Error loading main page", http.StatusInternalServerError)
 		return
 	}
 
@@ -125,23 +136,8 @@ func (app *application) SendLoginSuccess(w http.ResponseWriter, r *http.Request,
 	}
 
 	if err := tmpl.Execute(w, data); err != nil {
-		log.Print("Error SendLoginSuccess() 600 - Failed merging and serving template")
-		log.Print(err.Error())
-		http.Error(w, "Execution error", http.StatusInternalServerError)
-	}
-}
-
-func (app *application) SendLoginFail(w http.ResponseWriter, IP string, email string) {
-	log.Print("Failed login: ", IP, " ", email)
-	response, err := template.ParseFiles("../dynamic/login_fail.html")
-	if err != nil {
-		log.Print("Error SendLoginFail() 100 - Failed parsing login_fail.html")
-		return
-	}
-	err = response.Execute(w, nil)
-	if err != nil {
-		log.Print("Error SendLoginFail() 200 - Failed serving login_fail.html")
-		return
+		log.Print("Error SendLoginSuccess 80: ", err.Error())
+		http.Error(w, "Error loading main page", http.StatusInternalServerError)
 	}
 }
 
@@ -149,36 +145,39 @@ func (app *application) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	var storedHash string
 	var PasswordIsCorrect bool
 
-	IP := r.RemoteAddr
 	err := r.ParseForm()
-	email := r.FormValue("email")
-	password := r.FormValue("password")
-
 	if err != nil {
-		log.Print("Error HandleLogin() 100 - Failed parsing /login form")
-		app.SendLoginFail(w, IP, email)
+		log.Print("Error HandleLogin 10: ", err.Error())
+		http.Error(w, "Invalid input. Please check the form and try again.", http.StatusInternalServerError)
 		return
 	}
 
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+
 	err = app.db.QueryRow("SELECT user_hash FROM USERS WHERE user_email = ?", email).Scan(&storedHash)
-	if err != nil {
-		log.Print("Error HandleLogin() 200 - Wrong email or failed SQL query to find or get user hash based on provided email")
-		app.SendLoginFail(w, IP, email)
+	if err == sql.ErrNoRows {
+		log.Print("Alert HandleLogin 20: Unknown user ", email, " (", r.RemoteAddr, ")")
+		http.Error(w, "Authentication failed. Please check your details and try again.", http.StatusUnauthorized)
+		return
+	} else if err != nil {
+		log.Print("Error HandleLogin 21: ", err.Error())
+		http.Error(w, "Invalid input. Please check the form and try again.", http.StatusInternalServerError)
 		return
 	}
 
 	PasswordIsCorrect, err = argon2id.ComparePasswordAndHash(password, storedHash)
 	if err != nil {
-		log.Print("Error HandleLogin() 300 - Failed Argon2id comparing password and hash")
-		app.SendLoginFail(w, IP, email)
+		log.Print("Error HandleLogin 30: ", err.Error())
+		http.Error(w, "Invalid input. Please check the form and try again.", http.StatusInternalServerError)
 		return
 	}
 
 	if PasswordIsCorrect {
 		app.SendLoginSuccess(w, r, email)
 	} else {
-		log.Print("Alert HandleLogin() 400 - Wrong password")
-		app.SendLoginFail(w, IP, email)
+		log.Print("Alert HandleLogin 40: Wrong password for ", email, " (", r.RemoteAddr, ")")
+		http.Error(w, "Authentication failed. Please check your details and try again.", http.StatusUnauthorized)
 		return
 	}
 }
