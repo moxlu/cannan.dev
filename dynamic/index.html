@@ -9,11 +9,28 @@
 	<link rel="stylesheet" href="/static/main.css">
 </head>
 <body>
-	<form method="POST" action="/login">
-		<br><h1>cannan.dev</h1><br>
+	<br><h1>cannan.dev</h1>
+	<form method="POST" action="/login" id="form-login"><br>
 		<input class="input-login" type="text" placeholder="Email" name="email" required><br>
 		<input class="input-login" type="password" placeholder="Password" name="password" required><br>
 		<button type="submit" class="button-login">Login</button>
+		<p><a href="#" onclick="showReset()"> Reset Password</a></p>
 	</form>
+	<form method="POST" action="/reset_initiate" id="form-reset" style="display:none;">
+		<p>If you've already registered with us, we will send an email to you with a link to reset your password.</p>
+		<input class="input-login" type="text" placeholder="Email" name="email" required><br>
+		<button type="submit" class="button-login">Reset Password</button>
+		<p><a href="#" onclick="showLogin()"> Return to Login</a></p>
+	</form>
+<script>
+function showReset() {
+	document.getElementById("form-login").style.display = "none";
+	document.getElementById("form-reset").style.display = "block";
+}
+function showLogin() {
+	document.getElementById("form-login").style.display = "block";
+	document.getElementById("form-reset").style.display = "none";
+}
+</script>
 </body>
 </html>

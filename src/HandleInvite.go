@@ -24,7 +24,7 @@ func hashPassword(plainPwd string) (string, error) {
 	return hashedPwd, err
 }
 
-func (app *application) HandleInviteGet(w http.ResponseWriter, r *http.Request) {
+func (app *application) HandleGetInvite(w http.ResponseWriter, r *http.Request) {
 
 	var invite_id int
 	var invite_expiry sql.NullTime
@@ -69,7 +69,7 @@ func (app *application) HandleInviteGet(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func (app *application) HandleInvitePost(w http.ResponseWriter, r *http.Request) {
+func (app *application) HandlePostInvite(w http.ResponseWriter, r *http.Request) {
 
 	var invite_id int
 	var invite_issued sql.NullTime

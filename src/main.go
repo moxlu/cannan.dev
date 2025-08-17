@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -17,28 +16,6 @@ type application struct {
 	store *sessions.CookieStore
 }
 
-func (app *application) HandleIndex(w http.ResponseWriter, r *http.Request) {
-	log.Print(r.RemoteAddr + " " + r.Method + " " + r.URL.String())
-
-	response, err := template.ParseFiles("../dynamic/index.html")
-	if err != nil {
-		log.Print("Error HandleIndex() 100 - Failed parsing index.html")
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	err = response.Execute(w, nil)
-	if err != nil {
-		log.Print("Error HandleIndex() 200 - Failed serving index.html")
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	}
-}
-
-func Handle404(w http.ResponseWriter, r *http.Request) {
-	log.Print("Alert 404 - " + r.RemoteAddr + " " + r.Method + " " + r.URL.String())
-	http.Error(w, "Page not found", http.StatusNotFound)
-}
-
 func main() {
 	// Default flags for dev, prod flags are set in cannan.service
 	addr := flag.String("addr", ":4000", "HTTPS network address")
@@ -50,19 +27,21 @@ func main() {
 	// Start Database
 	db, err := sql.Open("sqlite3", *dsn)
 	if err != nil {
-		log.Fatalf("Database open error: %v", err)
+		log.Fatalf("Error (Fatal) Main 10: %v", err.Error())
+		return
 	}
 	defer db.Close()
 
 	if _, err := db.Exec("PRAGMA foreign_keys = ON;"); err != nil {
-		log.Fatalf("Failed to enable foreign keys: %v", err)
+		log.Fatalf("Error (Fatal) Main 20: %v", err.Error())
+		return
 	}
 	log.Print("Database loaded OK")
 
 	// Session key
 	sessionKey, err := os.ReadFile("../run/session.key")
 	if err != nil {
-		log.Fatalf("Session key read error: %v", err)
+		log.Fatalf("Error (Fatal) Main 30: %v", err.Error())
 		return
 	}
 
@@ -74,27 +53,31 @@ func main() {
 	// Routes
 	MuxPrimary := http.NewServeMux()
 	MuxPrimary.HandleFunc("GET /{$}", app.HandleIndex)
+	MuxPrimary.HandleFunc("GET /invite/{token}", app.HandleGetInvite)
+	MuxPrimary.HandleFunc("POST /invite/{token}", app.HandlePostInvite)
 	MuxPrimary.HandleFunc("POST /login", app.HandleLogin)
-	MuxPrimary.HandleFunc("GET /challenge/{id}", app.HandleChallengeGet)
-	MuxPrimary.HandleFunc("POST /challenge/{id}", app.HandleChallengePost)
-	MuxPrimary.HandleFunc("GET /invite/{token}", app.HandleInviteGet)
-	MuxPrimary.HandleFunc("POST /invite/{token}", app.HandleInvitePost)
-	MuxPrimary.HandleFunc("GET /scores", app.HandleScoresGet)
-	MuxPrimary.HandleFunc("GET /brutalpost", HandleBrutalpost)
-	MuxPrimary.HandleFunc("GET /lasersharks", HandleLasersharks)
+	MuxPrimary.HandleFunc("POST /reset_initiate", app.HandleInitiateReset)
+	MuxPrimary.HandleFunc("GET /reset/{token}", app.HandleGetResetForm)
+	MuxPrimary.HandleFunc("POST /reset/{token}", app.HandlePostResetForm)
+
+	MuxPrimary.HandleFunc("GET /challenge/{id}", app.HandleGetChallenge)
+	MuxPrimary.HandleFunc("POST /challenge/{id}", app.HandlePostChallenge)
+	MuxPrimary.HandleFunc("GET /scores", app.HandleGetScores)
+	MuxPrimary.HandleFunc("GET /brutalpost", HandleGetBrutalpost)
+	MuxPrimary.HandleFunc("GET /lasersharks", HandleGetLasersharks)
 
 	// Static files - note users can lookup directory
 	MuxPrimary.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../static/"))))
 	MuxPrimary.Handle("GET /challengeFiles/", http.StripPrefix("/challengeFiles/", http.FileServer(http.Dir("../challengeFiles/"))))
 	MuxPrimary.Handle("GET /favicon.ico", http.FileServer(http.Dir("../static/"))) // For default browser grab
 
-	// Catch-all 404
+	// Catch-all
 	MuxPrimary.HandleFunc("/", Handle404)
 
 	//Start HTTPS server
 	log.Printf("Starting HTTPS server on %s", *addr)
 	err = http.ListenAndServeTLS(*addr, *certFile, *keyFile, MuxPrimary)
 	if err != nil {
-		log.Fatalf("HTTPS server failed: %v", err)
+		log.Fatalf("Error (Fatal) Main 40: %v", err.Error())
 	}
 }

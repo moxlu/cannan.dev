@@ -18,7 +18,7 @@ type ChallengeDetails struct {
 	Challenge_result      template.HTML
 }
 
-func (app *application) HandleChallengeGet(w http.ResponseWriter, r *http.Request) {
+func (app *application) HandleGetChallenge(w http.ResponseWriter, r *http.Request) {
 	var c ChallengeDetails
 	var alreadySolved int
 
@@ -61,7 +61,7 @@ func (app *application) HandleChallengeGet(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func (app *application) HandleChallengePost(w http.ResponseWriter, r *http.Request) {
+func (app *application) HandlePostChallenge(w http.ResponseWriter, r *http.Request) {
 	normalise := func(s string) string {
 		s = strings.ToLower(strings.TrimSpace(s))
 		s = strings.ReplaceAll(s, "\n", "")

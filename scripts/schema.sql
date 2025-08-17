@@ -91,7 +91,16 @@ CREATE TABLE INVITES (
 	invite_issued DATETIME DEFAULT CURRENT_TIMESTAMP,
 	invite_expiry DATETIME,
 	invite_claimed_by TEXT,
-	invite_claimed_time DATETIME
+	invite_claimed BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE RESETS (
+	reset_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	reset_email TEXT NOT NULL UNIQUE,
+	reset_token TEXT NOT NULL UNIQUE,
+	reset_issued TEXT NOT NULL,
+	reset_expiry TEXT NOT NULL,
+	reset_used BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE IPS (
@@ -102,5 +111,13 @@ CREATE TABLE IPS (
 	ip_last_seen DATETIME,
 	ip_days_seen INTEGER DEFAULT 1,
 	ip_note TEXT,
+	FOREIGN KEY (user_id) REFERENCES USERS(user_id)
+);
+
+CREATE TABLE ULOGS (
+	ulog_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	ulog DATETIME DEFAULT CURRENT_TIMESTAMP,
+	user_id INTEGER,
+	ulog_event TEXT NOT NULL,
 	FOREIGN KEY (user_id) REFERENCES USERS(user_id)
 );

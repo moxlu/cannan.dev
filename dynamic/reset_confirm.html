@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>cannan.dev</title>
+	<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+	<link rel="stylesheet" href="/static/main.css">
+</head>
+<body>
+    <form method="POST" action="/reset/{{.Token}}">
+	    <br><h1>Reset password for cannan.dev</h1>
+		<p>This will reset the password for {{.Email}}.</p>
+	    <p><input class="input-login" type="password" placeholder="Password" name="password" required></p>
+   	    <p><input class="input-login" type="password" placeholder="Confirm Password" name="confirm_password" required></p>
+	    <p><button type="submit" class="button-login">Reset</button></p>    
+	</form>
+	</body>
+</html>

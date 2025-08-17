@@ -26,7 +26,7 @@ type ScoreData struct {
 	ScoreboardFeatured []ScoreboardEntry
 }
 
-func (app *application) HandleScoresGet(w http.ResponseWriter, r *http.Request) {
+func (app *application) HandleGetScores(w http.ResponseWriter, r *http.Request) {
 	var score_overall []ScoreboardEntry
 	var score_featured []ScoreboardEntry
 

@@ -7,7 +7,7 @@ SSH_PORT="8337"
 
 sudo apt update
 sudo apt upgrade -y
-sudo apt install -y sqlite3 certbot git wget fail2ban
+sudo apt install -y git wget certbot fail2ban opendkim opendkim-tools sqlite3
 
 # Copy my public keys to the server
 mkdir -p ~/.ssh
@@ -70,7 +70,7 @@ maxretry = 3
 bantime = 3600
 EOF
 
-sudo systemctl reload fail2ban
+sudo systemctl restart fail2ban
 
 # Initialise certbot for HTTPS
 sudo certbot certonly --standalone -d $DOMAIN --non-interactive --agree-tos -m certbot@$DOMAIN
@@ -83,11 +83,47 @@ sudo debconf-set-selections <<< "postfix postfix/mailname string mail.$DOMAIN"
 sudo debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'"
 sudo DEBIAN_FRONTEND=noninteractive apt install -y postfix
 if systemctl is-active --quiet postfix; then
-    echo "Postfix installed and running"
-    sudo postconf mail_version
+echo "Postfix installed and running"
+sudo postconf mail_version
+sudo postconf -e "inet_interfaces = loopback-only"
+sudo postconf -e "inet_protocols = ipv4"
+sudo postconf -e "mydestination = "
+sudo postconf -e "local_recipient_maps = "
+sudo postconf -e "local_transport = error:local mail delivery is disabled"
+sudo postconf -e "mynetworks = 127.0.0.0/8"
+sudo postconf -e "relay_domains = "
+sudo postconf -e "default_transport = smtp"
+sudo postconf -e "relay_transport = smtp"
+sudo postconf -e "canonical_maps = hash:/etc/postfix/canonical"
+sudo postconf -e "sender_canonical_maps = hash:/etc/postfix/sender_canonical"
+
+# Set up canonical mapping to ensure emails come from noreply@cannan.dev
+sudo tee /etc/postfix/canonical > /dev/null <<EOF
+root@$(hostname) noreply@$DOMAIN
+cannanbot@$(hostname) noreply@$DOMAIN
+$(whoami)@$(hostname) noreply@$DOMAIN
+EOF
+
+sudo tee /etc/postfix/sender_canonical > /dev/null <<EOF
+root noreply@$DOMAIN
+cannanbot noreply@$DOMAIN
+$(whoami) noreply@$DOMAIN
+EOF
+
+# Build the postfix hash tables
+sudo postmap /etc/postfix/canonical
+sudo postmap /etc/postfix/sender_canonical
+
+sudo systemctl restart postfix
+sudo systemctl enable postfix
+echo "Postfix configured for send-only operation"
 else
-    echo "Postfix installation failed"
+echo "Postfix installation failed"
 fi
+
+# Generate DKIM keys
+sudo mkdir -p /etc/opendkim/keys/$DOMAIN
+sudo opendkim-genkey -t -s default -d $DOMAIN -D /etc/opendkim/keys/$DOMAIN/
 
 # Get cannan.dev from github
 cd /opt/
@@ -129,8 +165,8 @@ sudo cp /opt/cannan.dev/scripts/cannan.service /etc/systemd/system/cannan.servic
 sudo cp /opt/cannan.dev/scripts/restart_cannan.sh /etc/letsencrypt/renewal-hooks/deploy/restart_cannan.sh
 sudo chmod +x /etc/letsencrypt/renewal-hooks/deploy/restart_cannan.sh
 
-sudo useradd -r -s /bin/false cannanbot
-sudo groupadd ssl-cert
+id -u cannanbot &>/dev/null || sudo useradd -r -s /bin/false cannanbot
+sudo groupadd -f ssl-cert
 sudo usermod -aG ssl-cert cannanbot
 sudo chown -R cannanbot:cannanbot /opt/cannan.dev
 
