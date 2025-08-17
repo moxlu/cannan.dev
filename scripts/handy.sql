@@ -23,6 +23,9 @@ WITH RECURSIVE
     UNION ALL
     SELECT x+1 FROM cnt WHERE x < 50
   )
-INSERT INTO INVITES (invite_token)
-SELECT hex(randomblob(16)) FROM cnt;
-UPDATE INVITES SET invite_expiry = '2025-09-01 10:00:00';
+INSERT INTO INVITES (invite_token, invite_expiry)
+SELECT hex(randomblob(16)), '2025-09-01 10:00:00' FROM cnt;
+
+-- Delete a user
+DELETE FROM USERS WHERE user_id = 99;
+
