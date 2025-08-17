@@ -80,8 +80,14 @@ func (app *application) HandleScoresGet(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Copy overall scoreboard to featured scoreboard
-	score_featured = make([]ScoreboardEntry, len(score_overall))
-	copy(score_featured, score_overall)
+	score_featured = make([]ScoreboardEntry, 0, len(score_overall)) // Start with 0 length but reserve capacity
+
+	// Only include users with featured points > 0
+	for _, entry := range score_overall {
+		if entry.UserScoreFeatured > 0 {
+			score_featured = append(score_featured, entry)
+		}
+	}
 
 	// Sort featured scoreboard by UserScoreFeatured (descending) and UserLastSolveFeatured (ascending)
 	sort.Slice(score_featured, func(i, j int) bool {
