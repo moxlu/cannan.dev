@@ -12,7 +12,7 @@
 
 read -p "Domain name for this server: " DOMAIN
 read -p "Select an SSH port for this server: " SSH_PORT
-read -p "Enter an email address for certbot: " CB_EMAIL
+read -p "Enter an email address for certbot & postfix test: " TEST_EMAIL
 read -p "Enter your github username: " GH_USERNAME
 echo "Creating human user $GH_USERNAME"
 id -u $GH_USERNAME &>/dev/null || sudo useradd -m -s /bin/bash $GH_USERNAME
@@ -92,10 +92,23 @@ EOF
 sudo systemctl restart fail2ban
 
 # Initialise certbot for HTTPS
-sudo certbot certonly --standalone -d $DOMAIN --non-interactive --agree-tos -m $CB_EMAIL
+sudo certbot certonly --standalone -d $DOMAIN --non-interactive --agree-tos -m $TEST_EMAIL
 sudo chgrp -R ssl-cert /etc/letsencrypt/
 sudo chmod -R 750 /etc/letsencrypt/
 sudo find /etc/letsencrypt/ -type f -exec chmod 640 {} \;
+
+# OpenDKIM before postfix
+
+
+
+
+
+
+
+
+
+
+
 
 # Install postfix for SMTP
 sudo debconf-set-selections <<< "postfix postfix/mailname string mail.$DOMAIN"
@@ -168,7 +181,8 @@ AutoRestartRate 10/1h
 Background      yes
 DNSTimeout      5
 SignatureAlgorithm rsa-sha256
-Socket          local:/run/opendkim/opendkim.sock
+PIDFile         /run/opendkim/opendkim.pid
+Socket          unix:/run/opendkim/opendkim.sock
 KeyTable        /etc/opendkim/key.table
 SigningTable    /etc/opendkim/signing.table
 ExternalIgnoreList /etc/opendkim/trusted.hosts
@@ -206,6 +220,17 @@ sudo systemctl enable opendkim
 sudo systemctl restart opendkim
 sudo systemctl restart postfix
 echo "DKIM setup completed."
+
+# Testmail
+cat <<EOF | sudo tee /etc/profile.d/testmail.sh
+alias testmail='sendmail $TEST_EMAIL <<< "Subject: Test $DOMAIN \$(date +%H:%M)
+From: noreply@$DOMAIN
+
+Test sent at \$(date).
+Please check the headers to ensure authentication is working."'
+EOF
+sudo chmod +x /etc/profile.d/testmail.sh
+testmail
 
 # Get cannan.dev from github
 cd /opt/
