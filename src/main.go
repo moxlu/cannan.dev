@@ -19,57 +19,86 @@ type application struct {
 func main() {
 	// Default flags for dev, prod flags are set in cannan.service
 	addr := flag.String("addr", ":4000", "HTTPS network address")
-	dsn := flag.String("dsn", "../run/cannan.db?_loc=auto&parseTime=true", "SQLite database file")
 	certFile := flag.String("certFile", "../run/fullchain.pem", "TLS certificate file")
 	keyFile := flag.String("keyFile", "../run/privkey.pem", "TLS private key file")
 	flag.Parse()
 
-	// Start Database
-	db, err := sql.Open("sqlite3", *dsn)
+	// Start Databases
+	dbCannan, err := sql.Open("sqlite3", "../run/cannan.db?_loc=auto&parseTime=true")
 	if err != nil {
 		log.Fatalf("Error (Fatal) Main 10: %v", err.Error())
 		return
 	}
-	defer db.Close()
+	defer dbCannan.Close()
 
-	if _, err := db.Exec("PRAGMA foreign_keys = ON;"); err != nil {
+	if _, err := dbCannan.Exec("PRAGMA foreign_keys = ON;"); err != nil {
 		log.Fatalf("Error (Fatal) Main 20: %v", err.Error())
 		return
 	}
-	log.Print("Database loaded OK")
+	log.Print("Cannan Database loaded OK")
 
-	// Session key
-	sessionKey, err := os.ReadFile("../run/session.key")
+	dbPossum, err := sql.Open("sqlite3", "../possum/possum.db?_loc=auto&parseTime=true")
+	if err != nil {
+		log.Fatalf("Error (Fatal) Main 30: %v", err.Error())
+		return
+	}
+	defer dbPossum.Close()
+
+	if _, err := dbPossum.Exec("PRAGMA foreign_keys = ON;"); err != nil {
+		log.Fatalf("Error (Fatal) Main 40: %v", err.Error())
+		return
+	}
+	log.Print("Possum Database loaded OK")
+
+	// Load session keys
+	sessionKeyCannan, err := os.ReadFile("../run/session.key")
 	if err != nil {
 		log.Fatalf("Error (Fatal) Main 30: %v", err.Error())
 		return
 	}
 
-	app := &application{
-		db:    db,
-		store: sessions.NewCookieStore(sessionKey),
+	sessionKeyPossum, err := os.ReadFile("../possum/possum_session.key")
+	if err != nil {
+		log.Fatalf("Error (Fatal) Main 40: %v", err.Error())
+		return
 	}
+
+	appCannan := &application{
+		db:    dbCannan,
+		store: sessions.NewCookieStore(sessionKeyCannan),
+	}
+
+	appPossum := &application{
+		db:    dbPossum,
+		store: sessions.NewCookieStore(sessionKeyPossum),
+	}
+
+	initPossum() // Load Possum flags
 
 	// Routes
 	MuxPrimary := http.NewServeMux()
-	MuxPrimary.HandleFunc("GET /{$}", app.HandleIndex)
-	MuxPrimary.HandleFunc("GET /invite/{token}", app.HandleGetInvite)
-	MuxPrimary.HandleFunc("POST /invite/{token}", app.HandlePostInvite)
-	MuxPrimary.HandleFunc("POST /login", app.HandleLogin)
-	MuxPrimary.HandleFunc("POST /reset_initiate", app.HandleInitiateReset)
-	MuxPrimary.HandleFunc("GET /reset/{token}", app.HandleGetResetForm)
-	MuxPrimary.HandleFunc("POST /reset/{token}", app.HandlePostResetForm)
+	MuxPrimary.HandleFunc("GET /{$}", appCannan.HandleIndex)
+	MuxPrimary.HandleFunc("GET /invite/{token}", appCannan.HandleGetInvite)
+	MuxPrimary.HandleFunc("POST /invite/{token}", appCannan.HandlePostInvite)
+	MuxPrimary.HandleFunc("POST /login", appCannan.HandleLogin)
+	MuxPrimary.HandleFunc("POST /reset_initiate", appCannan.HandleInitiateReset)
+	MuxPrimary.HandleFunc("GET /reset/{token}", appCannan.HandleGetResetForm)
+	MuxPrimary.HandleFunc("POST /reset/{token}", appCannan.HandlePostResetForm)
 
-	MuxPrimary.HandleFunc("GET /challenge/{id}", app.HandleGetChallenge)
-	MuxPrimary.HandleFunc("POST /challenge/{id}", app.HandlePostChallenge)
-	MuxPrimary.HandleFunc("GET /scores", app.HandleGetScores)
-	MuxPrimary.HandleFunc("GET /brutalpost", HandleGetBrutalpost)
-	MuxPrimary.HandleFunc("GET /lasersharks", HandleGetLasersharks)
+	MuxPrimary.HandleFunc("GET /challenge/{id}", appCannan.HandleGetChallenge)
+	MuxPrimary.HandleFunc("POST /challenge/{id}", appCannan.HandlePostChallenge)
+	MuxPrimary.HandleFunc("GET /scores", appCannan.HandleGetScores)
 
 	// Static files - note users can lookup directory
 	MuxPrimary.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../static/"))))
 	MuxPrimary.Handle("GET /challengeFiles/", http.StripPrefix("/challengeFiles/", http.FileServer(http.Dir("../challengeFiles/"))))
 	MuxPrimary.Handle("GET /favicon.ico", http.FileServer(http.Dir("../static/"))) // For default browser grab
+
+	// PossumAI, uses different DB and session key
+	MuxPrimary.Handle("GET /possumAI/static/", http.StripPrefix("/possumAI/static/", http.FileServer(http.Dir("../possum/static/"))))
+	MuxPrimary.HandleFunc("GET /possumAI", appPossum.HandleGetPossumIndex)
+	MuxPrimary.HandleFunc("POST /possumAI/enquiry", appPossum.HandlePostPossumEnquiry)
+	MuxPrimary.HandleFunc("POST /possumAI/login", appPossum.HandlePostPossumLogin)
 
 	// Catch-all
 	MuxPrimary.HandleFunc("/", Handle404)
@@ -78,6 +107,6 @@ func main() {
 	log.Printf("Starting HTTPS server on %s", *addr)
 	err = http.ListenAndServeTLS(*addr, *certFile, *keyFile, MuxPrimary)
 	if err != nil {
-		log.Fatalf("Error (Fatal) Main 40: %v", err.Error())
+		log.Fatalf("Error (Fatal) Main 50: %v", err.Error())
 	}
 }

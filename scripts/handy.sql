@@ -21,10 +21,14 @@ WITH RECURSIVE
   cnt(x) AS (
     SELECT 1
     UNION ALL
-    SELECT x+1 FROM cnt WHERE x < 50
+    SELECT x+1 FROM cnt WHERE x < 20
   )
 INSERT INTO INVITES (invite_token, invite_expiry)
-SELECT hex(randomblob(16)), '2025-09-01 10:00:00' FROM cnt;
+SELECT hex(randomblob(16)), '2025-11-01 10:00:00' FROM cnt;
+
+
+
+-- Remove unused invites
 
 -- Delete a user
 DELETE FROM USERS WHERE user_id = 99;

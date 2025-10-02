@@ -1,2 +1,2 @@
 #! /bin/bash
-go run ../src -cert ../run/cert.pem -key ../run/key.pem
+go run ../src -addr ":4000" -certFile ../run/cert.pem -keyFile ../run/key.pem
