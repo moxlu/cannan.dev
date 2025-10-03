@@ -53,13 +53,13 @@ func main() {
 	// Load session keys
 	sessionKeyCannan, err := os.ReadFile("../run/session.key")
 	if err != nil {
-		log.Fatalf("Error (Fatal) Main 30: %v", err.Error())
+		log.Fatalf("Error (Fatal) Main 50: %v", err.Error())
 		return
 	}
 
 	sessionKeyPossum, err := os.ReadFile("../possum/possum_session.key")
 	if err != nil {
-		log.Fatalf("Error (Fatal) Main 40: %v", err.Error())
+		log.Fatalf("Error (Fatal) Main 60: %v", err.Error())
 		return
 	}
 
@@ -107,6 +107,6 @@ func main() {
 	log.Printf("Starting HTTPS server on %s", *addr)
 	err = http.ListenAndServeTLS(*addr, *certFile, *keyFile, MuxPrimary)
 	if err != nil {
-		log.Fatalf("Error (Fatal) Main 50: %v", err.Error())
+		log.Fatalf("Error (Fatal) Main 70: %v", err.Error())
 	}
 }

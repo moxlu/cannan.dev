@@ -30,11 +30,13 @@ func initPossum() {
 	}
 }
 
-func doubleMD5(s string) string {
+func possumHash(s string) string {
 	h := md5.Sum([]byte(s))
 	first := fmt.Sprintf("%x", h[:])
 	h2 := md5.Sum([]byte(first))
-	return fmt.Sprintf("%x", h2[:])
+	second := fmt.Sprintf("%x", h2[:])
+	h3 := md5.Sum([]byte(second))
+	return fmt.Sprintf("%x", h3[:])
 }
 
 func (app *application) HandleGetPossumIndex(w http.ResponseWriter, r *http.Request) {
@@ -79,7 +81,7 @@ func (app *application) HandlePostPossumLogin(w http.ResponseWriter, r *http.Req
 
 	username := r.PostFormValue("username")
 	password := r.PostFormValue("password")
-	hash := doubleMD5(password)
+	hash := possumHash(password)
 
 	// This is a vulnerable function to demonstrate SQL injection and should not be replicated in a real server.
 	query := fmt.Sprintf("SELECT username FROM users WHERE username = '%s' AND hash = '%s' LIMIT 1", username, hash)
