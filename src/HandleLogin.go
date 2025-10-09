@@ -47,7 +47,7 @@ func (app *application) SendLoginSuccess(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	session, _ := app.store.Get(r, "session-name")
+	session, _ := app.store.Get(r, "cannan-session")
 	session.Values["authenticated"] = true
 	session.Values["user_email"] = user_email
 	session.Values["user_id"] = user_id

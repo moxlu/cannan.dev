@@ -97,13 +97,14 @@ func main() {
 	// PossumAI, uses different DB and session key
 	MuxPrimary.Handle("GET /possumAI/static/", http.StripPrefix("/possumAI/static/", http.FileServer(http.Dir("../possum/static/"))))
 	MuxPrimary.HandleFunc("GET /possumAI", appPossum.HandleGetPossumIndex)
-	MuxPrimary.HandleFunc("POST /possumAI/enquiry", appPossum.HandlePostPossumEnquiry)
 	MuxPrimary.HandleFunc("POST /possumAI/login", appPossum.HandlePostPossumLogin)
+	MuxPrimary.HandleFunc("POST /possumAI/enquiry", appPossum.HandlePostPossumEnquiry)
+	MuxPrimary.HandleFunc("POST /possumAI/verifycookie", appPossum.HandlePostVerifyCookie)
 
 	// Catch-all
 	MuxPrimary.HandleFunc("/", Handle404)
 
-	//Start HTTPS server
+	// Start HTTPS server
 	log.Printf("Starting HTTPS server on %s", *addr)
 	err = http.ListenAndServeTLS(*addr, *certFile, *keyFile, MuxPrimary)
 	if err != nil {
