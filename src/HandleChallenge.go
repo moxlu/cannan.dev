@@ -22,7 +22,7 @@ func (app *application) HandleGetChallenge(w http.ResponseWriter, r *http.Reques
 	var c ChallengeDetails
 	var alreadySolved int
 
-	session, _ := app.store.Get(r, "session-name")
+	session, _ := app.store.Get(r, "cannan-session")
 	user_id := session.Values["user_id"]
 	c.Challenge_id = r.PathValue("id")
 
@@ -72,7 +72,7 @@ func (app *application) HandlePostChallenge(w http.ResponseWriter, r *http.Reque
 	var dbFlags string
 	var alreadySolved bool
 
-	session, _ := app.store.Get(r, "session-name")
+	session, _ := app.store.Get(r, "cannan-session")
 	user_id := session.Values["user_id"]
 	user_email := session.Values["user_email"]
 
