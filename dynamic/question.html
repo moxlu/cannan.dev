@@ -1,0 +1,15 @@
+<form hx-post="/question/{{.QuestionId}}" hx-target="#story-content-{{.StoryId}}]]">
+<div class="container-input-flag-and-button-flag">
+    <input
+        class="input-flag"
+        type="text"
+        placeholder="{{.QuestionPlaceholder}}"
+        name="answer"
+        required
+        autocomplete="off" 
+        autocorrect="off" 
+        autocapitalize="off" 
+        spellcheck="false">
+    <button class="button-flag" type="submit" >Submit</button>
+</div>
+</form>

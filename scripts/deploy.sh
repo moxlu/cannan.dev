@@ -303,6 +303,5 @@ cat /etc/opendkim/keys/$DOMAIN/default.txt
 echo "========================================================="
 echo ""
 echo "In future, connect via: ssh -p $SSH_PORT $GH_USERNAME@$DOMAIN"
-echo "Rebooting in 10 seconds to test boot processes..."
-sleep 10
+echo "Rebooting..."
 sudo reboot

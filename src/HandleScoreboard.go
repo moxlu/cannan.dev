@@ -26,33 +26,50 @@ type ScoreData struct {
 	ScoreboardFeatured []ScoreboardEntry
 }
 
-func (app *application) HandleGetScores(w http.ResponseWriter, r *http.Request) {
+func (app *application) HandleGetScoreboard(w http.ResponseWriter, r *http.Request) {
 	var score_overall []ScoreboardEntry
 	var score_featured []ScoreboardEntry
 
-	// Intent:
 	query := `
-    SELECT 
-        u.user_id,
-        u.user_name,
+	SELECT 
+		u.user_id,
+		u.user_name,
 		u.user_description,
-        COALESCE(SUM(c.challenge_points), 0) AS overall_score,
-		COALESCE(SUM(CASE WHEN c.challenge_featured = 1 THEN c.challenge_points ELSE 0 END), 0) AS featured_score,
-		MAX(s.solve_datetime) AS last_solve_overall,
-    	MAX(CASE WHEN c.challenge_featured = 1 THEN s.solve_datetime ELSE NULL END) AS last_solve_featured
-    FROM USERS u
-    LEFT JOIN SOLVES s ON u.user_id = s.user_id
-    LEFT JOIN CHALLENGES c ON s.challenge_id = c.challenge_id
-    WHERE u.user_isdeactivated = 0
-      AND u.user_ishidden = 0
-    GROUP BY u.user_id, u.user_name
-    ORDER BY overall_score DESC, last_solve_overall ASC;
-    `
+		COALESCE(SUM(points), 0) AS overall_score,
+		COALESCE(SUM(CASE WHEN is_featured = 1 THEN points ELSE 0 END), 0) AS featured_score,
+		MAX(last_solve_datetime) AS last_solve_overall,
+		MAX(CASE WHEN is_featured = 1 THEN last_solve_datetime ELSE NULL END) AS last_solve_featured
+	FROM USERS u
+	LEFT JOIN (
+		SELECT 
+			s.user_id,
+			c.challenge_points AS points,
+			c.challenge_featured AS is_featured,
+			s.solve_datetime AS last_solve_datetime
+		FROM SOLVES s
+		JOIN CHALLENGES c ON s.challenge_id = c.challenge_id
+
+		UNION ALL
+
+		SELECT
+			qs.user_id,
+			1 AS points,
+			st.story_featured AS is_featured,
+			qs.solve_datetime AS last_solve_datetime
+		FROM QUESTIONS_SOLVED qs
+		JOIN QUESTIONS q ON qs.question_id = q.question_id
+		JOIN STORIES st ON q.question_story_id = st.story_id
+	) AS combined ON combined.user_id = u.user_id
+	WHERE u.user_isdeactivated = 0
+	AND u.user_ishidden = 0
+	GROUP BY u.user_id, u.user_name, u.user_description
+	ORDER BY overall_score DESC, last_solve_overall ASC;
+	`
+
 	rows, err := app.db.Query(query)
 	if err != nil {
-		log.Print("Error HandleScoresGet 100: ", err.Error())
+		log.Print("Error HandleGetScoreboard 10: ", err.Error())
 		http.Error(w, "Error processing scores", http.StatusInternalServerError)
-		// Do I need rows.Close() here?
 		return
 	}
 	defer rows.Close()
@@ -70,7 +87,7 @@ func (app *application) HandleGetScores(w http.ResponseWriter, r *http.Request) 
 			&entry.UserLastSolveFeatured,
 		)
 		if err != nil {
-			log.Print("Error HandleScoresGet 200: ", err.Error())
+			log.Print("Error HandleGetScoreboard 20: ", err.Error())
 			http.Error(w, "Error processing scores", http.StatusInternalServerError)
 			return
 		}
@@ -120,13 +137,13 @@ func (app *application) HandleGetScores(w http.ResponseWriter, r *http.Request) 
 
 	tmpl, err := template.ParseFiles("../dynamic/scoreboards.html")
 	if err != nil {
-		log.Print("Error HandleScoresGet 300: ", err.Error())
+		log.Print("Error HandleGetScoreboard 30: ", err.Error())
 		http.Error(w, "Error displaying scores", http.StatusInternalServerError)
 		return
 	}
 
 	if err := tmpl.Execute(w, data); err != nil {
-		log.Print("Error HandleScoresGet 400: ", err.Error())
+		log.Print("Error HandleGetScroeboard 40: ", err.Error())
 		http.Error(w, "Error displaying scores", http.StatusInternalServerError)
 	}
 }

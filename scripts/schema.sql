@@ -121,3 +121,33 @@ CREATE TABLE ULOGS (
 	ulog_event TEXT NOT NULL,
 	FOREIGN KEY (user_id) REFERENCES USERS(user_id)
 );
+
+CREATE TABLE STORIES (
+	story_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	story_title TEXT NOT NULL,
+	story_intro TEXT,
+	story_featured BOOLEAN DEFAULT 0,
+	story_hidden BOOLEAN DEFAULT 0,
+	story_uploaded DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE QUESTIONS (
+	question_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	question_story_id INTEGER NOT NULL,
+	question_order INTEGER DEFAULT 100,
+	question_text_before TEXT NOT NULL,
+	question_placeholder TEXT,
+	question_answers TEXT NOT NULL,
+	question_text_after TEXT NOT NULL,
+	FOREIGN KEY (question_story_id) REFERENCES STORIES(story_id)
+);
+
+CREATE TABLE QUESTIONS_SOLVED (
+	solve_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	user_id INTEGER NOT NULL,
+	question_id INTEGER NOT NULL,
+	solve_datetime DATETIME DEFAULT CURRENT_TIMESTAMP,
+	UNIQUE(user_id, question_id),
+	FOREIGN KEY (user_id) REFERENCES USERS(user_id),
+	FOREIGN KEY (question_id) REFERENCES QUESTIONS(question_id)
+);

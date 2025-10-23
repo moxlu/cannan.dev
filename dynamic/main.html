@@ -1,109 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>cannan.dev</title>
-	<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-	<link rel="stylesheet" href="/static/main.css">
-</head>
-<body>
 <div class="toolbar">
-	<button class="button-toolbar" onclick="showSection('noticeboard')">Noticeboard</button>
-	<button class="button-toolbar" onclick="showSection('challenges')">Challenges</button>
-	<button class="button-toolbar" onclick="showSection('scoreboard')" hx-get="/scores" hx-target="#scoreboard" hx-swap="innerHTML">Scoreboard</button>
+	<button class="button-toolbar" onclick="showSection('noticeboard')">
+		Noticeboard
+	</button>
+	<button 
+		class="button-toolbar"
+		onclick="showSection('challenges')"
+		hx-get="/challenges"
+		hx-target="#challenges"
+		hx-swap="innerHTML">
+		Challenges
+	</button>
+	<button
+		class="button-toolbar"
+		onclick="showSection('scoreboard')"
+		hx-get="/scoreboard"
+		hx-target="#scoreboard"
+		hx-swap="innerHTML">
+		Scoreboard
+	</button>
 </div>
-<!------------------------------------------------->
 <div id="noticeboard" class="section">
-	{{range .Notices}}
-        <div class="notice">{{.Notice_title}}{{.Notice_content}}</div>
-        {{else}}
-        <h2>No notices found.</h2>
-    {{end}}
-</div>
-<!------------------------------------------------->
-<div id="challenges" class="section" style="display: none;">
-	<h1>This Week's Featured Challenges</h1>
-	<p>New challenges appear every Thursday Evening.</p>
-	{{if .ChallengesFeatured}}
-		<div class="card-grid">
-		{{range .ChallengesFeatured}}
-		<div class="card"
-			hx-get="/challenge/{{.Challenge_id}}"
-			hx-target="#challenge-details"
-     		hx-swap="innerHTML"
-			hx-on::after-on-load="openModal()">
-			<table class="challenge-summary"><tr>
-			<td class="challenge-summary-left"><h3>{{.Challenge_title}}</h3>
-			<p><b>Tags: </b>{{.Challenge_tags}}</p>
-			<p>{{.Challenge_solves}} solves</p></td>
-			<td class="challenge-summary-right"><h1>{{.Challenge_points}}</h1></td>
-			</tr></table>
-		</div>
-		{{end}}
-	</div>
+	{{range .}}
+	<div class="notice">{{.NoticeTitle}}{{.NoticeContent}}</div>
 	{{else}}
-	<p>No featured challenges at this time.</p><br>
-	{{end}}	
-	
-	<h1>Other Challenges</h1>
-	{{if .ChallengesOther}}
-	<div class="card-grid">
-		{{range .ChallengesOther}}
-		<div class="card"
-			hx-get="/challenge/{{.Challenge_id}}"
-			hx-target="#challenge-details"
-     		hx-swap="innerHTML"
-			hx-on::after-on-load="openModal()">
-			<table class="challenge-summary"><tr>
-			<td class="challenge-summary-left"><h3>{{.Challenge_title}}</h3>
-			<p><b>Tags: </b>{{.Challenge_tags}}</p>
-			<p>{{.Challenge_solves}} solves</p></td>
-			<td class="challenge-summary-right"><h1>{{.Challenge_points}}</h1></td>
-			</tr></table>
-		</div>
-		{{end}}
-	</div>
-	{{else}}
-	<p>No other challenges at this time.</p><br>
-	{{end}}	
-	<div id="challenge-modal" class="modal" style="display:none;">
-		<div class="modal-content">
-			<span class="close" onclick="closeModal()">&times;</span>
-			<div id="challenge-details"></div>
-		</div>
-	</div>
+	<h2>No notices found.</h2>
+	{{end}}
 </div>
-<!------------------------------------------------->
-<div id="scoreboard" class="section" style="display: none;"></div>
-<!------------------------------------------------->
-<script>
-function showSection(idToShow) {
-	const sections = ['noticeboard', 'challenges', 'scoreboard'];
-	sections.forEach(id => {
-	const section = document.getElementById(id);
-	if (section) {
-		section.style.display = id === idToShow ? 'block' : 'none';
-	}
-  });
-}
-function openModal() {
-	document.getElementById("challenge-modal").style.display = "block";
-}
-function closeModal() {
-	document.getElementById("challenge-modal").style.display = "none";
-}
-// Close modal on background click
-window.onclick = function(event) {
-	const modal = document.getElementById("challenge-modal");
-	if (event.target === modal) {
-		closeModal();
-	}
-}
-</script>
-<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js"
-		integrity="sha384-Akqfrbj/HpNVo8k11SXBb6TlBWmXXlYQrCSqEWmyKJe+hDm3Z/B2WVG4smwBkRVm"
-		crossorigin="anonymous"></script>
-</body>
-</html>
+<div id="challenges" class="section" style="display: none"></div>
+<div id="scoreboard" class="section" style="display: none"></div>

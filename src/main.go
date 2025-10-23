@@ -24,18 +24,24 @@ func main() {
 	flag.Parse()
 
 	// Start Databases
-	dbCannan, err := sql.Open("sqlite3", "../run/cannan.db?_loc=auto&parseTime=true")
+	dbCannan, err := sql.Open("sqlite3", "../run/cannan.db?_loc=auto&parseTime=true&_busy_timeout=5000")
 	if err != nil {
-		log.Fatalf("Error (Fatal) Main 10: %v", err.Error())
-		return
+		log.Fatalf("Fatal: failed to open database: %v", err)
 	}
 	defer dbCannan.Close()
 
-	if _, err := dbCannan.Exec("PRAGMA foreign_keys = ON;"); err != nil {
-		log.Fatalf("Error (Fatal) Main 20: %v", err.Error())
-		return
+	pragmaStatements := []string{
+		"PRAGMA journal_mode = WAL;",
+		"PRAGMA synchronous = NORMAL;",
+		"PRAGMA foreign_keys = ON;",
 	}
-	log.Print("Cannan Database loaded OK")
+
+	for _, stmt := range pragmaStatements {
+		if _, err := dbCannan.Exec(stmt); err != nil {
+			log.Fatalf("Fatal: failed to execute %s: %v", stmt, err)
+		}
+	}
+	log.Print("Cannan database loaded successfully.")
 
 	dbPossum, err := sql.Open("sqlite3", "../possum/possum.db?_loc=auto&parseTime=true")
 	if err != nil {
@@ -85,14 +91,11 @@ func main() {
 	MuxPrimary.HandleFunc("GET /reset/{token}", appCannan.HandleGetResetForm)
 	MuxPrimary.HandleFunc("POST /reset/{token}", appCannan.HandlePostResetForm)
 
+	MuxPrimary.HandleFunc("GET /challenges", appCannan.HandleGetChallenges)
 	MuxPrimary.HandleFunc("GET /challenge/{id}", appCannan.HandleGetChallenge)
 	MuxPrimary.HandleFunc("POST /challenge/{id}", appCannan.HandlePostChallenge)
-	MuxPrimary.HandleFunc("GET /scores", appCannan.HandleGetScores)
-
-	// Static files - note users can lookup directory
-	MuxPrimary.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../static/"))))
-	MuxPrimary.Handle("GET /challengeFiles/", http.StripPrefix("/challengeFiles/", http.FileServer(http.Dir("../challengeFiles/"))))
-	MuxPrimary.Handle("GET /favicon.ico", http.FileServer(http.Dir("../static/"))) // For default browser grab
+	MuxPrimary.HandleFunc("GET /scoreboard", appCannan.HandleGetScoreboard)
+	MuxPrimary.HandleFunc("POST /question/{id}", appCannan.HandlePostQuestion)
 
 	// PossumAI, uses different DB and session key
 	MuxPrimary.Handle("GET /possumAI/static/", http.StripPrefix("/possumAI/static/", http.FileServer(http.Dir("../possum/static/"))))
@@ -101,7 +104,19 @@ func main() {
 	MuxPrimary.HandleFunc("POST /possumAI/enquiry", appPossum.HandlePostPossumEnquiry)
 	MuxPrimary.HandleFunc("POST /possumAI/verifycookie", appPossum.HandlePostVerifyCookie)
 
-	// Catch-all
+	// Static files
+	MuxPrimary.Handle("GET /cannan.css", http.FileServer(http.Dir("../static/")))
+	MuxPrimary.Handle("GET /cannan.js", http.FileServer(http.Dir("../static/")))
+	MuxPrimary.Handle("GET /favicon.ico", http.FileServer(http.Dir("../static/")))
+	MuxPrimary.Handle("GET /robots.txt", http.FileServer(http.Dir("../static/")))
+	
+	// Disable challengeFiles directory listing
+	MuxPrimary.HandleFunc("GET /challengeFiles/{$}", Handle404)
+	// but serve individual challengeFiles
+	MuxPrimary.Handle("GET /challengeFiles/", http.StripPrefix("/challengeFiles/", http.FileServer(http.Dir("../challengeFiles/"))))
+	// TODO: Handle404 /challengeFiles/doesnotexist
+
+	// Catch-all 404 (includes logging)
 	MuxPrimary.HandleFunc("/", Handle404)
 
 	// Start HTTPS server

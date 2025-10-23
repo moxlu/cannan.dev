@@ -1,0 +1,72 @@
+<h1>This Week's Featured Challenges</h1>
+<p>New challenges appear every Thursday Evening.</p>
+	
+<div class="challenge-container">
+{{range .ChallengesFeatured}}
+<div
+	class="challenge-card {{.ChallengeSolved}}"
+	hx-get="/challenge/{{.ChallengeId}}"
+	hx-target="#challenge-details"
+	hx-swap="innerHTML"
+	hx-on::after-on-load="openModal()">
+	<table class="challenge-summary">
+		<tr>
+		<td class="challenge-summary-left">
+		<h3>{{.ChallengeTitle}}</h3>
+		<p><b>Tags: </b>{{.ChallengeTags}}</p>
+		<p>{{.ChallengeSolves}} solves</p>
+		</td>
+		<td class="challenge-summary-right">
+		<h1>{{.ChallengePoints}}</h1>
+		</td>
+		</tr>
+	</table>
+</div>
+{{end}}
+</div>
+
+{{range .StoriesFeatured}}
+<div class="story-card">
+	<table class="story-header"><tr>
+		<td class="left"><h2>{{.StoryTitle}}</h2></td>
+		<td class="right"><h1>{{.StoryPoints}}</h1></td>
+	</tr></table>
+	<div class="story-content">
+		<br><hr>{{.StoryIntro}}
+		<div id="story-content-{{.StoryId}}">{{.StoryContent}}</div>
+	</div>
+</div>
+{{end}}
+
+<br><h1>Other Challenges</h1>
+<div class="challenge-container">
+{{range .ChallengesOther}}
+<div
+	class="challenge-card {{.ChallengeSolved}}"
+	hx-get="/challenge/{{.ChallengeId}}"
+	hx-target="#challenge-details"
+	hx-swap="innerHTML"
+	hx-on::after-on-load="openModal()"
+	{{.ChallengeSolved}}>
+	<table class="challenge-summary">
+		<tr>
+		<td class="challenge-summary-left">
+		<h3>{{.ChallengeTitle}}</h3>
+		<p><b>Tags: </b>{{.ChallengeTags}}</p>
+		<p>{{.ChallengeSolves}} solves</p>
+		</td>
+		<td class="challenge-summary-right">
+		<h1>{{.ChallengePoints}}</h1>
+		</td>
+		</tr>
+	</table>
+</div>
+{{end}}
+</div>
+	
+<div id="challenge-modal" class="modal" style="display: none">
+	<div class="modal-content">
+		<span class="close" onclick="closeModal()">&times;</span>
+		<div id="challenge-details"></div>
+	</div>
+</div>
