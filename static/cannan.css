@@ -132,7 +132,6 @@ p {
 	color: #222;
 	border-radius: 10px;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-	cursor: pointer;
 	transition: transform 0.3s ease, box-shadow 0.3s ease;
 	margin-top: 10px;
 }
@@ -168,6 +167,7 @@ p {
 	padding: 10px;
 	border-radius: 10px;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+	cursor: pointer;
 	transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
