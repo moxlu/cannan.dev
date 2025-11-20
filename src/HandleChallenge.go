@@ -298,8 +298,8 @@ func (app *application) HandlePostChallenge(w http.ResponseWriter, r *http.Reque
 	var alreadySolved bool
 
 	session, _ := app.store.Get(r, "cannan-session")
-	user_id := session.Values["user_id"]
-	user_email := session.Values["user_email"]
+	user_id := session.Values["userId"]
+	user_email := session.Values["userEmail"]
 
 	if !session.Values["authenticated"].(bool) {
 		log.Print("Alert HandleChallengePost 10: Submitter not authorised")
